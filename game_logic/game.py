@@ -59,6 +59,8 @@ class Game():
             self.compute_hand(player.hand, self.cards_on_table)
 
     def compute_hand(self, hand: list[Card], card_on_table: list[Card]) -> tuple[str, int]: #fx: ("One Pair", 6) Har et par 6
+
+        # TODO Needs Testing
         hand_suits = [hand[0].suit, hand[0].suit]
         table_suits = [elem.suit for elem in card_on_table]
         matching_cards = []
