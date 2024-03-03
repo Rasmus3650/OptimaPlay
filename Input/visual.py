@@ -4,7 +4,6 @@ import pytesseract
 import time
 from PIL import ImageGrab
 import sys, os
-import easyocr
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from game_logic.card import Card
 from game_logic.table import Table
@@ -34,7 +33,7 @@ class Visual_input():
         
         self.card_regions = [id0, id1, id2, id3, id4, id5]
 
-        self.card_rank_map = {"A": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9, "10": 10, "J": 11, "Q": 12, "K": 13}
+        self.card_rank_map = {"2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9, "10": 10, "J": 11, "Q": 12, "K": 13, "A": 14}
 
         self.monitor = {'top': 0, 'left': 0, 'width': 1920, 'height': 1080}
         self.monitor_tuple = (0, 0, 1920, 1080)

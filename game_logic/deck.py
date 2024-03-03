@@ -1,9 +1,10 @@
 from .card import Card
+import random
 
 class Deck():
     def __init__(self, set_of_cards: int = 1):
         self.all_suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
-        self.all_ranks = [1,2,3,4,5,6,7,8,9,10,11,12,13]
+        self.all_ranks = [2,3,4,5,6,7,8,9,10,11,12,13,14]
         self.undiscovered_cards = []
         self.discovered_cards = []
         for _ in range(set_of_cards):
@@ -11,12 +12,14 @@ class Deck():
                 for suit in self.all_suits:
                     self.undiscovered_cards.append(Card(rank, suit))
                     
-    def draw_card(self, in_card: Card):
-        if in_card != None:
-            for card in self.undiscovered_cards:
-                if in_card == card:
-                    self.discovered_cards.append(card)
-                    self.undiscovered_cards.remove(card)
+    def draw_cards(self, amount):
+        res_list = []
+        for _ in range(amount):
+            card = random.choice(self.undiscovered_cards)
+            res_list.append(card)
+            self.discovered_cards.append(card)
+            self.undiscovered_cards.remove(card)
+        return res_list
 
     def print_discovered_cards(self):
         result = f"Discovered Cards:\n"
