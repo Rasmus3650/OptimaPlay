@@ -31,13 +31,13 @@ class Table():
     def update_players(self):
         for player in self.seated_players:
             if player.balance <= 0.01:
-                del self.seated_players[player]
+                self.seated_players.remove(player)
 
     def end_game(self):
         print(f"RETURNREUTUNEURUERNEURNUERNU")
         self.game_history.append(self.current_game)
         self.update_players()
-        self.current_game = Game(len(self.game_history), self.seated_players, return_function=self.end_game)
+        self.current_game = Game(len(self.game_history), self.seated_players, return_function=self.end_game, table=self)
     
     def get_id(self):
         return self.side

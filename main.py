@@ -1,4 +1,4 @@
-from Input.visual import Visual_input
+#from Input.visual import Visual_input
 import cv2
 import numpy as np
 from PIL import ImageGrab
