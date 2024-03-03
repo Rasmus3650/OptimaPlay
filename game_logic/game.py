@@ -33,7 +33,7 @@ class Game():
         
     
     def do_one_round(self):
-        for player in self.active_player_list.items():
+        for _, player in self.active_player_list.items():
             player.perform_action()
 
     def player_performed_action(self):
@@ -105,7 +105,7 @@ class Game():
         
             
         if new_state == "Pre-flop":
-            for i in self.active_player_list.items():
+            for _, i in self.active_player_list.items():
                 i.perform_action()
             self.deal_hands()
             self.do_one_round()
@@ -143,11 +143,11 @@ class Game():
     def deal_hands(self):
         for player in self.player_list:
             if not player.balance <= 0.01:
-                self.active_player_list.append(player)
+                self.active_player_list[len(self.active_player_list)] = player
                 player.set_hand(self.table.deck.draw_cards(2))
     
     def deal_table(self, amount):
-        self.cards_on_table += self.table.deck.deal_cards(amount)
+        self.cards_on_table += self.table.deck.draw_cards(amount)
     
     def game_over(self):
         self.dealer = (self.dealer + 1) % len(self.player_list)
