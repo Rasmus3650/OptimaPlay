@@ -363,16 +363,7 @@ class Game():
         print(f"Hand: {hand}")
         print(f"Table: {card_on_table}")
         print(f"Result: {hand_res}")
-        
-        
-        
-        
-        
-        
-
-
-        input("AAAAAAAA")
-            
+                    
 
 
     def transition_state(self):
