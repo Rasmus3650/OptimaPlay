@@ -13,9 +13,9 @@ class Player():
         self.all_in = False
         self.action_history: list[Player_Action] = []
         self.table = table
-        self.hand = []                                                          # List of 2 cards
-        self.play_style = ["Aggressive", "Passive"]                             # Class labels for detected playstyles
-        self.strategy = strategy()                                                # Call the Strategy with the correct strategy, function
+        self.hand = []                                                              # List of 2 cards
+        self.play_style = ["Aggressive", "Passive"]                                 # Class labels for detected playstyles
+        self.strategy = strategy()                                                  # Call the Strategy with the correct strategy, function
         self.actions =  [Player_Action(table, self.player_id, action) for action in ["Fold", "Check", "Call", "Bet", "Raise"]]       # Set of possible actions
 
 
