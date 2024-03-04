@@ -34,6 +34,9 @@ class Player():
     
     def set_hand(self, cards: list[Card]):
         self.hand = cards
+    
+    def add_to_balance(self, change):
+        self.balance += change
 
     def __repr__(self) -> str:
         return_str = f"Player {self.player_id}\nIs Us: {self.is_us}\nHand: {self.hand} - Folded: {self.folded}\nBalance: {self.balance}\n Actions\n"
