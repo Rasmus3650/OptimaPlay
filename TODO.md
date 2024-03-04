@@ -1,8 +1,9 @@
-[ ] Migrate computations to GPU
-[ ] Run each Table on its own thread
-[ ] Finish the Poker-Game Object
-[ ] Create the Model Interface
+# Essential <br>
+[ ] Migrate computations to GPU<br>
+[ ] Run each Table on its own thread<br>
+[ ] Finish the Poker-Game Object<br>
+[ ] Create the Model Interface<br>
 
-# Non-Essential
-[ ] Collect Visual data
-[ ]Instantiate relevant objects with data from the visual module
+# Non-Essential<br>
+[ ] Collect Visual data<br>
+[ ]Instantiate relevant objects with data from the visual module<br>
