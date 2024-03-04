@@ -288,82 +288,56 @@ class Game():
         royal_flush, royal_flush_res = self.compute_straight_flush(hand, card_on_table, hand_suits, table_suits, royal=True)
         if royal_flush:
             print(f"ROYAL FLUSH: {royal_flush}:\n  {royal_flush_res}")
-            hand_res = royal_flush_res
-            pass #Så behøver vi ikke kalde de andre compute - metoder
-        
+            return royal_flush_res
+            
         straight_flush, straight_flush_res = self.compute_straight_flush(hand, card_on_table, hand_suits, table_suits, royal=False)
         if straight_flush:
             print(f"STRAIGHT FLUSH: {straight_flush}:\n  {straight_flush_res}")
-            if hand_res is None:
-                hand_res = straight_flush_res
-            pass
+            return straight_flush_res
         
         four_of_a_kind, four_of_a_kind_res = self.compute_four_of_a_kind(hand, card_on_table, hand_ranks, table_ranks)
         if four_of_a_kind:
             print(f"FOUR OF A KIND: {four_of_a_kind}:\n  {four_of_a_kind_res}")
-            if hand_res is None:
-                hand_res = four_of_a_kind_res
-            pass
+            return four_of_a_kind_res
         
         full_house, full_house_res = self.compute_full_house(hand, card_on_table, hand_ranks, table_ranks)
         if full_house:
             print(f"FULL HOUSE: {full_house}:\n  {full_house_res}")
-            if hand_res is None:
-                hand_res = full_house_res
-            pass
+            return full_house_res
 
         flush, flush_res = self.compute_flush(hand, card_on_table, hand_suits, table_suits)
         if flush:
             print(f"FLUSH: {flush}:\n  {flush_res}")
-            if hand_res is None:
-                hand_res = flush_res
-            pass
+            return flush_res
         
         straight, straight_res = self.compute_straight(hand, card_on_table, hand_ranks, table_ranks)
         if straight:
             print(f"STRAIGHT: {straight}:\n  {straight_res}")
-            if hand_res is None:
-                hand_res = straight_res
-            pass
+            return straight_res
         
         three_of_a_kind, three_of_a_kind_res = self.compute_three_of_a_kind(hand, card_on_table, hand_ranks, table_ranks)
         if three_of_a_kind:
             print(f"THREE OF A KIND: {three_of_a_kind}:\n  {three_of_a_kind_res}")
-            if hand_res is None:
-                hand_res = three_of_a_kind_res
-            pass
+            return three_of_a_kind_res
         
         two_pairs, two_pairs_res = self.compute_pairs(hand, card_on_table, hand_ranks, table_ranks, amount_of_pairs=2)
         if two_pairs:
             print(f"TWO PAIRS: {two_pairs}:\n  {two_pairs_res}")
-            if hand_res is None:
-                hand_res = two_pairs_res
-            pass
+            return two_pairs_res
         
         one_pair, one_pairs_res = self.compute_pairs(hand, card_on_table, hand_ranks, table_ranks, amount_of_pairs=1)
         if one_pair:
             print(f"ONE PAIR: {one_pair}:\n  {one_pairs_res}")
-            if hand_res is None:
-                hand_res = one_pairs_res
-            pass
+            return one_pairs_res
 
         high_card, high_card_res = self.compute_high_card(hand, card_on_table, hand_ranks, table_ranks)
         if high_card:
             print(f"HIGH CARD: {high_card}:\n  {high_card_res}")
-            if hand_res is None:
-                hand_res = high_card_res
-            pass
+            return high_card_res
         
-        if hand_res is None:
-            print(f"ERROR: this shouldn't happen")
+        print(f"ERROR: this shouldn't happen")
+        return None
         
-        
-        
-        print()
-        print(f"Hand: {hand}")
-        print(f"Table: {card_on_table}")
-        print(f"Result: {hand_res}")
-                    
 
 
     def transition_state(self):
