@@ -53,11 +53,27 @@ class Game():
         
         return action
 
-    def get_winner(self, hands_map) -> tuple[Player, int]:
-        self.cards_on_table
+    def get_winner(self) -> Player:
+
+        #Håndends primære rank er Royal Flush = 10, Straight Flush = 9, osv.
+        #En straigh med tallene 4, 5, 6, 7, 8 har primær rank 5, fordi self.rank_list["Straight"] = 5,
+        #og den har sekundær rank 8, fordi 8 er det højeste tal i straighten
+        highest_hand_primary_rank = 0
+        highest_hand_secondary_rank = 0
+        winner = None
         
-        for _, player in self.active_player_list.items():
-            self.compute_hand(player.hand, self.cards_on_table)
+        for player_id in list(self.active_player_list.keys()):
+            curr_player = self.active_player_list[player_id]
+            hand_str, hand_secondary_rank = self.compute_hand(curr_player.hand, self.cards_on_table)
+            if self.rank_list[hand_str] >= highest_hand_primary_rank:
+                if hand_secondary_rank < highest_hand_secondary_rank: #Måske håndtere hvis de er lig med hinanden???
+                    continue
+                highest_hand_primary_rank = self.rank_list[hand_str]
+                highest_hand_secondary_rank = hand_secondary_rank
+                winner = curr_player
+        
+        return winner
+
     
     def compute_straight_flush(self, hand, card_on_table, hand_suits: list[str], table_suits: list[str], royal = False) -> tuple[str, int]:
         hand_fitted = len(np.unique(hand_suits)) == 1
@@ -268,7 +284,6 @@ class Game():
         
 
     def compute_hand(self, hand: list[Card], card_on_table: list[Card]) -> tuple[str, int]: #fx: ("One Pair", 6) Har et par 6
-        print(f"Compute hand called")
         
         # TODO Needs Testing
 
@@ -276,15 +291,12 @@ class Game():
         #hand = [Card(12, "Hearts"), Card(2, "Clubs")]
         #card_on_table = [Card(9, "Clubs"), Card(13, "Hearts"), Card(7, "Diamonds"), Card(10, "Hearts"), Card(6, "Hearts")]
 
-
-
         hand_suits = [hand[0].current_suit, hand[1].current_suit]
         table_suits = [elem.current_suit for elem in card_on_table]
 
         hand_ranks = [hand[0].current_rank, hand[1].current_rank]
         table_ranks = [elem.current_rank for elem in card_on_table]
         
-        hand_res = None
         royal_flush, royal_flush_res = self.compute_straight_flush(hand, card_on_table, hand_suits, table_suits, royal=True)
         if royal_flush:
             print(f"ROYAL FLUSH: {royal_flush}:\n  {royal_flush_res}")
@@ -365,15 +377,9 @@ class Game():
            new_state = "Conclusion" 
             
         if new_state == "Conclusion":
-            print(f"Folded: ", end=" ")
-            for player in self.player_list:
-                print(player.folded, end=" ")
-                hands_map[player.player_id] = player.hand
-            print()
-            print(hands_map)
-            self.get_winner(hands_map)
-
-
+            winning_player = self.get_winner()
+            print(f"Winner:\n{winning_player}")
+            winning_player.add_to_balance(self.pot)
             self.return_function()
 
         if new_state == "Pre-round":
