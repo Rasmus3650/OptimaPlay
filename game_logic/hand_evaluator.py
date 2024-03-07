@@ -134,7 +134,7 @@ class Hand_Evaluator():
         
         for rank_tup in rank_tuples:
             if rank_tup[1] >= 4:
-                return True, ("Four of a kind", rank_tup[0])  # Hvis der er 2 four of a kinds skal vi finde den største
+                return True, ("Four of a Kind", rank_tup[0])  # Hvis der er 2 four of a kinds skal vi finde den største
         
         return False, ("", 0)
     

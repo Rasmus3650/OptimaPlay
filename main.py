@@ -28,7 +28,7 @@ from Input.training import Training
 
 
 def main():
-    training_obj = Training()
+    training_obj = Training(number_of_tables=1)
     
 
 if __name__ == "__main__":

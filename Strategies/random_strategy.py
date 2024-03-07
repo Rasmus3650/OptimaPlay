@@ -8,8 +8,10 @@ class Random_strategy(Strategy):
         pass
 
     def compute_action(self, table, player_id: int) -> Player_Action:
-        #if super().compute_action(table, player_id) is None: return None
+        if super().compute_action(table, player_id) == "NoAction": return None
         #print(f"AAAA: {table.seated_players[player_id].folded}")
+        print(f"PLAYER: {player_id}")
+        print(table.seated_players[player_id].actions[1:-1])
         return random.choice(table.seated_players[player_id].actions[1:-1])
 
     def compute_bet_amount(self, table, player_id: int):

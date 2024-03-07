@@ -38,8 +38,8 @@ class Game():
         
     
     def do_one_round(self):
-        print(f"Starting this round: {self.current_player}")
-        print(f"Ending this round: {self.trans_player}\n")
+        #print(f"Starting this round: {self.current_player}")
+        #print(f"Ending this round: {self.trans_player}\n")
 
         while self.current_player != self.trans_player:
             action_performed = self.player_performed_action()
@@ -49,16 +49,22 @@ class Game():
 
     def player_performed_action(self):
         player_id = self.current_player
-        print(f"Game state: {self.game_state}")
+        #print(f"Game state: {self.game_state}")
         
         if self.game_state == "Showdown":
             return None
-        action = self.player_list[player_id].perform_action()
+        print(list(self.active_player_list.keys()))
+        print(player_id)
+        print(f"BAL {player_id}: {self.active_player_list[self.current_player].balance}")
+        action = self.active_player_list[player_id].perform_action()
+        if action is None:
+            self.current_player = (self.current_player + 1) % len(list(self.active_player_list.keys()))
+            return None
 
         if self.game_state in list(self.action_map.keys()):
             self.action_map[self.game_state].append(action)
 
-        print(f"Player {player_id} performed {action}\n")
+        #print(f"Player {player_id} performed {action}\n")
         if action.action_str == "Raise" or action.action_str == "Bet" or action.action_str == "Call":
             self.pot = round(self.pot + action.bet_amount, 2)
         if action.action_str == "Raise":
@@ -134,9 +140,9 @@ class Game():
         
         
     def deal_hands(self):
-        for player in self.player_list:
+        for player in self.table.seated_players:
             if not player.balance <= 0.01:
-                self.active_player_list[len(self.active_player_list)] = player
+                self.active_player_list[len(self.active_player_list.keys())] = player
                 player.set_hand(self.table.deck.draw_cards(2))
     
     def deal_table(self, amount):
@@ -144,20 +150,9 @@ class Game():
     
     def game_over(self):
         self.game_ended = True
-        if self.save_game:
-            self.record_game()
         self.return_function()
     
-    def get_valid_folder_name(self, folder_path = "./recorded_games/"):
-        if not os.path.exists(folder_path): os.mkdir(folder_path)
-        current_id = 0
-        while os.path.exists(os.path.join(folder_path, f"game_{current_id}")):
-            current_id += 1
-        return os.path.join(folder_path, f"game_{current_id}")
-
-    
-    def record_game(self, folder_path = "./recorded_games/"):
-        game_folder = self.get_valid_folder_name(folder_path=folder_path)
+    def record_game(self, game_folder):
 
         header_str = f""
 
@@ -167,6 +162,7 @@ class Game():
         
         csv_file = open(os.path.join(game_folder, f"Actions.csv"), "w")
         csv_file.write(header_str)
+
 
         for i in range(len(self.action_map[list(self.action_map.keys())[0]])):
             line_str = f""
@@ -178,12 +174,21 @@ class Game():
                     line_str += f"[],"
             line_str = line_str[:-1] + "\n"
             csv_file.write(line_str)
+     
+        for i in range(len(self.action_map[list(self.action_map.keys())[0]])):
+            line_str = f""
+            for key in list(self.action_map.keys()):
+                if len(self.action_map[key]) > i:
+                    action = self.action_map[key][i]
+                    line_str += f"[{action.player_id};{action.action_str};{action.bet_amount}],"
+                else:
+                    line_str += f"[],"
+            line_str = line_str[:-1] + "\n"
+            csv_file.write(line_str)
+        
         
         csv_file.close()
 
-
-        
-    
 
     def __repr__(self) -> str:
         return_str = f"Game {self.game_id} (D: {self.dealer}, C: {self.current_player}, T: {self.trans_player})\n  Number of players: {len(self.player_list)}\n  Game State: {self.game_state}\n  Pot: {self.pot}\n  Pot Hist:\n"

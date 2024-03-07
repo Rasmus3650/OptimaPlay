@@ -21,6 +21,7 @@ class Player():
 
 
     def perform_action(self):
+        print(f"PLAYER {self.player_id} ACTION")
         action_to_append = self.strategy.compute_action(table=self.table, player_id=self.player_id)
         
         if action_to_append is None: return None
