@@ -149,6 +149,7 @@ class Game():
         self.return_function()
     
     def get_valid_folder_name(self, folder_path = "./recorded_games/"):
+        if not os.path.exists(folder_path): os.mkdir(folder_path)
         current_id = 0
         while os.path.exists(os.path.join(folder_path, f"game_{current_id}")):
             current_id += 1
@@ -157,7 +158,6 @@ class Game():
     
     def record_game(self, folder_path = "./recorded_games/"):
         game_folder = self.get_valid_folder_name(folder_path=folder_path)
-        os.mkdir(game_folder)
 
         header_str = f""
 
