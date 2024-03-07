@@ -7,6 +7,7 @@
 [ ] Create the Model Interface<br>
 [ ] Implement greedy strategy (André) <br>
 [ ] Add a requirements.txt to ensure we all have the same packages and versions
+[ ] Parse the saved-game files and implement a pygame replay feature
 # Non-Essential<br>
 [ ] Collect Visual data<br>
 [ ]Instantiate relevant objects with data from the visual module<br>
