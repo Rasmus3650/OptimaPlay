@@ -2,17 +2,17 @@ from typing import Any
 from .player import Player
 from .card import Card
 import numpy as np
+from .hand_evaluator import Hand_Evaluator
+import os
+import csv
+
 class Game():
-    def __init__(self, game_id, player_list: list[Player], return_function, table, start_balance: int = None) -> None:
+    def __init__(self, game_id, player_list: list[Player], return_function, table, start_balance: int = None, save_game = False) -> None:
         self.game_id = game_id
         self.player_list = player_list
         self.active_player_list = {}
-        #print(f"ACTTIVE:")
-        for i, player in enumerate(self.player_list):
-            self.active_player_list[i] = player
-            print(player)
-            #print(f"Player: {i}:")
-            #print(player)
+        #for i, player in enumerate(self.player_list):   #Is overwritten in deal_hands
+        #    self.active_player_list[i] = player
         
         self.rank_list = {"Royal Flush": 10, "Straight Flush": 9, "Four of a Kind": 8, "Full House": 7, "Flush": 6, "Straight": 5, "Three of a Kind": 4, "Two Pairs": 3, "One Pair": 2, "High Card": 1}
         
@@ -28,366 +28,110 @@ class Game():
         self.blinds: list[int] = [(self.dealer + 1) % len(self.player_list), (self.dealer + 2) % len(self.player_list)]
         self.current_player: int = (self.dealer + 3) % len(self.player_list)
         self.trans_player:int = (self.current_player - 1) % len(self.player_list)
+        self.hand_evaluator = Hand_Evaluator()
+        self.save_game = save_game
 
+        self.action_map = {"Pre-flop": [], "Flop": [], "Turn": [], "River": []}
+        self.winner = None
 
         self.transition_state()
         
     
     def do_one_round(self):
-        for _, player in self.active_player_list.items():
-            player.perform_action()
+        print(f"Starting this round: {self.current_player}")
+        print(f"Ending this round: {self.trans_player}\n")
+
+        while self.current_player != self.trans_player:
+            action_performed = self.player_performed_action()
+
+        action_performed = self.player_performed_action()
+
 
     def player_performed_action(self):
         player_id = self.current_player
-
+        print(f"Game state: {self.game_state}")
+        
         if self.game_state == "Showdown":
             return None
         action = self.player_list[player_id].perform_action()
+
+        if self.game_state in list(self.action_map.keys()):
+            self.action_map[self.game_state].append(action)
+
+        print(f"Player {player_id} performed {action}\n")
         if action.action_str == "Raise" or action.action_str == "Bet" or action.action_str == "Call":
             self.pot = round(self.pot + action.bet_amount, 2)
         if action.action_str == "Raise":
             self.trans_player = player_id - 1 % len(self.player_list)
         if player_id == self.trans_player:
             self.transition_state()
-        self.current_player = (self.current_player + 1) % len(self.player_list)
+        else:
+            self.current_player = (self.current_player + 1) % len(self.player_list)
         
         return action
 
-    def get_winner(self) -> Player:
+    def get_winner(self) -> tuple[Player, str, int]:
 
         #Håndends primære rank er Royal Flush = 10, Straight Flush = 9, osv.
         #En straigh med tallene 4, 5, 6, 7, 8 har primær rank 5, fordi self.rank_list["Straight"] = 5,
         #og den har sekundær rank 8, fordi 8 er det højeste tal i straighten
         highest_hand_primary_rank = 0
         highest_hand_secondary_rank = 0
+        highest_hand_str = ""
         winner = None
         
         for player_id in list(self.active_player_list.keys()):
             curr_player = self.active_player_list[player_id]
-            hand_str, hand_secondary_rank = self.compute_hand(curr_player.hand, self.cards_on_table)
+            hand_str, hand_secondary_rank = self.hand_evaluator.compute_hand(curr_player.hand, self.cards_on_table)
             if self.rank_list[hand_str] >= highest_hand_primary_rank:
                 if hand_secondary_rank < highest_hand_secondary_rank: #Måske håndtere hvis de er lig med hinanden???
                     continue
                 highest_hand_primary_rank = self.rank_list[hand_str]
                 highest_hand_secondary_rank = hand_secondary_rank
+                highest_hand_str = hand_str
                 winner = curr_player
         
-        return winner
+        return (winner, highest_hand_str, highest_hand_secondary_rank)
 
     
-    def compute_straight_flush(self, hand, card_on_table, hand_suits: list[str], table_suits: list[str], royal = False) -> tuple[str, int]:
-        hand_fitted = len(np.unique(hand_suits)) == 1
-        matching_cards = []
-        if (hand_fitted and table_suits.count(hand_suits[0]) >= 3) or (table_suits.count(hand_suits[0]) >= 4 or table_suits.count(hand_suits[1]) >= 4) or (len(np.unique(table_suits)) == 1): # Royal Flush
-            if hand_fitted:
-                matching_cards.append(hand[0])
-                matching_cards.append(hand[1])
-                for card in card_on_table:
-                    if card.current_suit == hand_suits[0]:
-                        matching_cards.append(card)
-            elif table_suits.count(hand_suits[0]) >= 4:
-                matching_cards.append(hand_suits[0])
-                for card in card_on_table:
-                    if card.current_suit == hand_suits[0]:
-                        matching_cards.append(card)
-                        
-            elif table_suits.count(hand_suits[1]) >= 4:
-                matching_cards.append(hand_suits[1])
-                for card in card_on_table:
-                    if card.current_suit == hand_suits[1]:
-                        matching_cards.append(card)
-
-            elif np.unique(table_suits) == 1:
-                for card in hand:
-                    if card.current_suit == table_suits[0]:
-                        matching_cards.append(card)
-                for card in card_on_table:
-                    matching_cards.append(card)
-            
-            rank_list = [elem.current_rank for elem in matching_cards]
-            if royal:
-                if 10 in rank_list and 11 in rank_list and 12 in rank_list and 13 in rank_list and 14 in rank_list:
-                    return True, ("Royal Flush", 14)
-            else:
-                start_rank = None
-                straight_list = []
-                matching_cards.sort(key=lambda x: x.current_rank)
-                
-                for card in matching_cards:
-                    if start_rank == None or (len(straight_list) > 0 and card.current_rank != straight_list[-1].current_rank + 1):
-                        start_rank = card.current_rank
-                        straight_list = [card]
-                    elif len(straight_list) > 0 and card.current_rank == (straight_list[-1].current_rank) + 1:
-                        straight_list.append(card)
-                        if len(straight_list) == 5:
-                            return True, ("Straight Flush", card.current_rank)
-
-        return False, ("", 0)
-    
-    def compute_four_of_a_kind(self, hand, card_on_table, hand_ranks: list[str], table_ranks: list[str]):
-        all_ranks = hand_ranks + table_ranks
-        all_ranks_unique = np.unique(all_ranks)
-        
-        
-        rank_tuples = []   #(rank, all_ranks.count(rank))
-
-        for rank in all_ranks_unique:
-            rank_tuples.append((rank, all_ranks.count(rank)))
-        
-        for rank_tup in rank_tuples:
-            if rank_tup[1] >= 4:
-                return True, ("Four of a kind", rank_tup[0])  # Hvis der er 2 four of a kinds skal vi finde den største
-        
-        return False, ("", 0)
-    
-    def compute_full_house(self, hand, card_on_table, hand_ranks, table_ranks):
-        all_ranks = hand_ranks + table_ranks
-        all_ranks_unique = np.unique(all_ranks)
-        
-        
-        rank_tuples = []   #(rank, all_ranks.count(rank))
-
-        for rank in all_ranks_unique:
-            rank_tuples.append((rank, all_ranks.count(rank)))
-        
-        three_of_a_kind = False
-        pair = False
-        highest_rank = 0
-
-        for rank_tup in rank_tuples:
-            if rank_tup[1] >= 3:
-                if not three_of_a_kind: 
-                    if rank_tup[0] > highest_rank:
-                        highest_rank = rank_tup[0]
-                    three_of_a_kind = True
-                else:
-                    pair = True
-            elif rank_tup[1] >= 2:
-                if rank_tup[0] > highest_rank:
-                    highest_rank = rank_tup[0]
-                pair = True
-        
-        if three_of_a_kind and pair:
-            return True, ("Full House", highest_rank)
-        else:
-            return False, ("", 0)
-    
-
-    def compute_flush(self, hand, card_on_table, hand_suits, table_suits):
-        all_cards = hand + card_on_table
-
-        suits_map = {"Spades": [0, 0], "Hearts": [0, 0], "Clubs": [0, 0], "Diamonds": [0, 0]}
-
-        for suit in list(suits_map.keys()):
-            suits_map[suit][0] += sum(c.current_suit == suit for c in all_cards)
-            for c in all_cards:
-                if c.current_rank > suits_map[c.current_suit][1]:
-                    suits_map[c.current_suit][1] = c.current_rank
-
-        
-
-        flush_found = False
-        highest_rank = 0
-
-        
-        for suit in list(suits_map.keys()):
-            amount, highest = suits_map[suit]
-            if amount >= 5:
-                if not flush_found:
-                    flush_found = True
-                    highest_rank = highest
-                elif highest > highest_rank:
-                    highest_rank = highest
-        if flush_found:
-            return flush_found, ("Flush", highest_rank)
-        else:
-            return flush_found, ("", highest_rank)
-
-
-    def compute_straight(self, hand, card_on_table, hand_ranks, table_ranks):
-        all_cards = hand + card_on_table
-        sorted_cards = sorted(all_cards, key=lambda x: x.current_rank)
-
-
-        start_rank = None
-        straight_list = []
-
-        for card in sorted_cards:
-            if start_rank == None or (len(straight_list) > 0 and (card.current_rank != straight_list[-1].current_rank + 1 and card.current_rank != straight_list[-1].current_rank)):
-                start_rank = card.current_rank
-                straight_list = [card]
-            elif len(straight_list) > 0 and card.current_rank == (straight_list[-1].current_rank) + 1:
-                straight_list.append(card)
-                if len(straight_list) == 5:
-                    return True, ("Straight", card.current_rank)
-
-        return False, ("", 0)
-    
-    def compute_three_of_a_kind(self, hand, card_on_table, hand_ranks, table_ranks):
-        all_ranks = hand_ranks + table_ranks
-        all_ranks_unique = np.unique(all_ranks)
-        
-        
-        rank_tuples = []   #list[(rank, all_ranks.count(rank))]
-        for rank in all_ranks_unique:
-            rank_tuples.append((rank, all_ranks.count(rank)))
-        
-        highest = 0
-        found_three = False
-
-        for rank_tup in rank_tuples:
-            if rank_tup[1] >= 3:
-                found_three = True
-                if rank_tup[0] > highest:
-                    highest = rank_tup[0]
-        
-        if found_three:
-            return True, ("Three of a kind", highest) 
-        else:
-            return False, ("", 0)
-        
-    def compute_pairs(self, hand, card_on_table, hand_ranks, table_ranks, amount_of_pairs):
-        all_ranks = hand_ranks + table_ranks
-        all_ranks_unique = np.unique(all_ranks)
-        
-        
-        rank_tuples = []   #list[(rank, all_ranks.count(rank))]
-        for rank in all_ranks_unique:
-            rank_tuples.append([rank, all_ranks.count(rank)])
-        
-        pairs = 0
-        highest = 0
-
-        for rank_tup_idx in range(len(rank_tuples)):
-            rank_tup = rank_tuples[rank_tup_idx]
-            if rank_tup[1] >= 2:
-                pairs += 1
-                rank_tup[1] -= 2
-                rank_tup_idx -= 1
-                if rank_tup[0] > highest:
-                    highest = rank_tup[0]
-
-        if amount_of_pairs == 2:
-            if pairs >= 2:
-                return True, ("Two Pairs", highest)
-            else:
-                return False, ("", 0)
-        if amount_of_pairs == 1:
-            if pairs >= 1:
-                return True, ("One Pair", highest)
-            else:
-                return False, ("", 0)
-        
-
-    def compute_high_card(self, hand, card_on_table, hand_ranks, table_ranks):
-        return True, ("High Card", max(hand_ranks + table_ranks))
-        
-
-    def compute_hand(self, hand: list[Card], card_on_table: list[Card]) -> tuple[str, int]: #fx: ("One Pair", 6) Har et par 6
-        
-        # TODO Needs Testing
-
-        #Custom hands/table for testing
-        #hand = [Card(12, "Hearts"), Card(2, "Clubs")]
-        #card_on_table = [Card(9, "Clubs"), Card(13, "Hearts"), Card(7, "Diamonds"), Card(10, "Hearts"), Card(6, "Hearts")]
-
-        hand_suits = [hand[0].current_suit, hand[1].current_suit]
-        table_suits = [elem.current_suit for elem in card_on_table]
-
-        hand_ranks = [hand[0].current_rank, hand[1].current_rank]
-        table_ranks = [elem.current_rank for elem in card_on_table]
-        
-        royal_flush, royal_flush_res = self.compute_straight_flush(hand, card_on_table, hand_suits, table_suits, royal=True)
-        if royal_flush:
-            print(f"ROYAL FLUSH: {royal_flush}:\n  {royal_flush_res}")
-            return royal_flush_res
-            
-        straight_flush, straight_flush_res = self.compute_straight_flush(hand, card_on_table, hand_suits, table_suits, royal=False)
-        if straight_flush:
-            print(f"STRAIGHT FLUSH: {straight_flush}:\n  {straight_flush_res}")
-            return straight_flush_res
-        
-        four_of_a_kind, four_of_a_kind_res = self.compute_four_of_a_kind(hand, card_on_table, hand_ranks, table_ranks)
-        if four_of_a_kind:
-            print(f"FOUR OF A KIND: {four_of_a_kind}:\n  {four_of_a_kind_res}")
-            return four_of_a_kind_res
-        
-        full_house, full_house_res = self.compute_full_house(hand, card_on_table, hand_ranks, table_ranks)
-        if full_house:
-            print(f"FULL HOUSE: {full_house}:\n  {full_house_res}")
-            return full_house_res
-
-        flush, flush_res = self.compute_flush(hand, card_on_table, hand_suits, table_suits)
-        if flush:
-            print(f"FLUSH: {flush}:\n  {flush_res}")
-            return flush_res
-        
-        straight, straight_res = self.compute_straight(hand, card_on_table, hand_ranks, table_ranks)
-        if straight:
-            print(f"STRAIGHT: {straight}:\n  {straight_res}")
-            return straight_res
-        
-        three_of_a_kind, three_of_a_kind_res = self.compute_three_of_a_kind(hand, card_on_table, hand_ranks, table_ranks)
-        if three_of_a_kind:
-            print(f"THREE OF A KIND: {three_of_a_kind}:\n  {three_of_a_kind_res}")
-            return three_of_a_kind_res
-        
-        two_pairs, two_pairs_res = self.compute_pairs(hand, card_on_table, hand_ranks, table_ranks, amount_of_pairs=2)
-        if two_pairs:
-            print(f"TWO PAIRS: {two_pairs}:\n  {two_pairs_res}")
-            return two_pairs_res
-        
-        one_pair, one_pairs_res = self.compute_pairs(hand, card_on_table, hand_ranks, table_ranks, amount_of_pairs=1)
-        if one_pair:
-            print(f"ONE PAIR: {one_pair}:\n  {one_pairs_res}")
-            return one_pairs_res
-
-        high_card, high_card_res = self.compute_high_card(hand, card_on_table, hand_ranks, table_ranks)
-        if high_card:
-            print(f"HIGH CARD: {high_card}:\n  {high_card_res}")
-            return high_card_res
-        
-        print(f"ERROR: this shouldn't happen")
-        return None
-        
-
-
     def transition_state(self):
         if 5 > self.all_game_states.index(self.game_state) and self.all_game_states.index(self.game_state) > 0:
                 self.pot_history.append(self.pot)
         new_state = self.all_game_states[self.all_game_states.index(self.game_state) + 1 % len(self.all_game_states)]
-        hands_map = {}
-        
-            
+        print(f"Game state transitioned from '{self.game_state}' to '{new_state}'")
+        self.game_state = new_state
+
+        if new_state in ["Flop", "Turn", "River"]:
+            self.current_player = (self.dealer + 1) % len(self.player_list)
+            self.trans_player = self.dealer
+
+
         if new_state == "Pre-flop":
-            for _, i in self.active_player_list.items():
-                i.perform_action()
             self.deal_hands()
-            self.do_one_round()
+            #self.do_one_round()
 
         if new_state == "Flop":
             self.deal_table(3)
-            self.do_one_round()
+            #self.do_one_round()
         
         if new_state == "Turn" or new_state == "River":
             self.deal_table(1)
-            self.do_one_round()
+            #self.do_one_round()
         
         if new_state == "Showdown":
            new_state = "Conclusion" 
             
         if new_state == "Conclusion":
-            winning_player = self.get_winner()
-            print(f"Winner:\n{winning_player}")
-            winning_player.add_to_balance(self.pot)
-            self.return_function()
+            self.winner, winner_hand, winner_hand_rank = self.get_winner()
+            
+            for key in list(self.active_player_list.keys()):
+                print(f"Player {key} hand: {self.active_player_list[key].hand}")
+            print(f"Table: {self.cards_on_table}")
+            print(f"Winner: Player {self.winner.player_id} with {winner_hand} (rank {winner_hand_rank})")
+            self.winner.add_to_balance(self.pot)
+            self.game_over()
 
-        if new_state == "Pre-round":
-            print(f"Game ended")
-            self.game_ended = True
-            self.return_function()
-        print(f"Game state transitioned from '{self.game_state}' to '{new_state}'")
-        self.game_state = new_state
+        
         
     def deal_hands(self):
         for player in self.player_list:
@@ -399,11 +143,48 @@ class Game():
         self.cards_on_table += self.table.deck.draw_cards(amount)
     
     def game_over(self):
-        self.dealer = (self.dealer + 1) % len(self.player_list)
-        self.current_player: int = (self.dealer + 1) % len(self.player_list)
-        self.trans_player:int = (self.current_player - 1) % len(self.player_list)
+        self.game_ended = True
+        if self.save_game:
+            self.record_game()
         self.return_function()
     
+    def get_valid_folder_name(self, folder_path = "./recorded_games/"):
+        current_id = 0
+        while os.path.exists(os.path.join(folder_path, f"game_{current_id}")):
+            current_id += 1
+        return os.path.join(folder_path, f"game_{current_id}")
+
+    
+    def record_game(self, folder_path = "./recorded_games/"):
+        game_folder = self.get_valid_folder_name(folder_path=folder_path)
+        os.mkdir(game_folder)
+
+        header_str = f""
+
+        for key in list(self.action_map.keys()):
+            header_str += f"{key}, "
+        header_str = header_str[:-2] + "\n"
+        
+        csv_file = open(os.path.join(game_folder, f"Actions.csv"), "w")
+        csv_file.write(header_str)
+
+        for i in range(len(self.action_map[list(self.action_map.keys())[0]])):
+            line_str = f""
+            for key in list(self.action_map.keys()):
+                if len(self.action_map[key]) > i:
+                    action = self.action_map[key][i]
+                    line_str += f"[{action.player_id};{action.action_str};{action.bet_amount}],"
+                else:
+                    line_str += f"[],"
+            line_str = line_str[:-1] + "\n"
+            csv_file.write(line_str)
+        
+        csv_file.close()
+
+
+        
+    
+
     def __repr__(self) -> str:
         return_str = f"Game {self.game_id} (D: {self.dealer}, C: {self.current_player}, T: {self.trans_player})\n  Number of players: {len(self.player_list)}\n  Game State: {self.game_state}\n  Pot: {self.pot}\n  Pot Hist:\n"
         for pot in self.pot_history:

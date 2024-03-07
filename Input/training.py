@@ -13,8 +13,6 @@ class Training():
         self.table_list = {}
         for i in range(number_of_tables):
             self.table_list[i]=Table(1.6, i)
-        for table in self.table_list:
-            print(table)
         for table in list(self.table_list.keys()):
             for i in range(6):
                 self.table_list[table].player_joined()

@@ -11,7 +11,7 @@ class Table():
         self.curr_id = 0
         self.curr_pos = 0
         self.side = side
-        self.corner_points = [[249,325 + (side*960)], [249, 388 + (side*960)+ 1], [249, 453 + (side*960)+1], [249, 517 + (side*960)], [249,582 + (side*960)]]
+        self.corner_points = [[249, 325 + (side*960)], [249, 388 + (side*960)+ 1], [249, 453 + (side*960)+1], [249, 517 + (side*960)], [249, 582 + (side*960)]]
     
     def check_if_all_folded(self):
         for player in self.current_game.player_list:
@@ -19,13 +19,16 @@ class Table():
         return True
     
     def start_game(self):
-        self.current_game = Game(len(self.game_history), self.seated_players, return_function=self.end_game, table=self)
-        print(self.current_game)
+        self.current_game = Game(len(self.game_history), self.seated_players, return_function=self.end_game, table=self, save_game=True)
+        
+        #print(self.current_game)
         while not self.current_game.game_ended:
+            self.current_game.do_one_round()
+
         #for _ in range(3):
-            action = self.current_game.player_performed_action()
-            print(action)
-            print(self.current_game)
+        #    action = self.current_game.player_performed_action()
+        #    print(action)
+        #    print(self.current_game)
         
 
     def update_players(self):
@@ -37,7 +40,7 @@ class Table():
         print(f"RETURNREUTUNEURUERNEURNUERNU")
         self.game_history.append(self.current_game)
         self.update_players()
-        self.current_game = Game(len(self.game_history), self.seated_players, return_function=self.end_game, table=self)
+        #self.current_game = Game(len(self.game_history), self.seated_players, return_function=self.end_game, table=self)
     
     def get_id(self):
         return self.side
