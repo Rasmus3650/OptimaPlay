@@ -8,9 +8,9 @@ class Random_strategy(Strategy):
         pass
 
     def compute_action(self, table, player_id: int) -> Player_Action:
-        super().compute_action(table, player_id)
-        print(f"AAAA: {table.seated_players[player_id].folded}")
-        return random.choice(table.seated_players[player_id].actions[1:])
+        #if super().compute_action(table, player_id) is None: return None
+        #print(f"AAAA: {table.seated_players[player_id].folded}")
+        return random.choice(table.seated_players[player_id].actions[1:-1])
 
     def compute_bet_amount(self, table, player_id: int):
         return round(random.uniform(0.01, table.seated_players[player_id].balance), 2)
