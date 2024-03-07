@@ -6,7 +6,7 @@ import os
 class Table():
     def __init__(self, start_balance: float, side: int, save_table = True, record_folder_path = "recorded_tables/") -> None:
         self.game_history: list[Game] = []
-        self.seated_players = []
+        self.seated_players = {}
         self.deck = Deck()
         self.current_game = None
         self.record_folder_path = record_folder_path
@@ -52,26 +52,32 @@ class Table():
             self.current_game.record_game(save_path)
 
     def update_players(self):
-        for player in self.seated_players:
+        for player_id in list(self.seated_players.keys()):
+            player = self.seated_players[player_id]
             if player.balance <= 0.01:
-                self.seated_players.remove(player)
+                print(player_id)
+                print(list(self.seated_players.keys()))
+                self.seated_players.pop(player_id)
+                print(list(self.seated_players.keys()))
+                #input("???????")
+
 
     def end_game(self):
         print(f"RETURNREUTUNEURUERNEURNUERNU")
         self.game_history.append(self.current_game)
         self.update_players()
-        if len(self.seated_players) > 1:
-            #self.current_game = Game(len(self.game_history), self.seated_players, return_function=self.end_game, table=self)
+        if len(list(self.seated_players.keys())) > 1:
             self.start_game()
     
-    def get_id(self):
+    def get_side(self):
         return self.side
     
     def get_game_id(self):
         return self.current_game.game_id
 
     def player_joined(self, balance: float = 1.6): #TESTING
-        self.seated_players.append(Player(len(self.seated_players), len(self.seated_players) == 0, balance, table=self))
+        self.seated_players[len(list(self.seated_players.keys()))] = Player(len(self.seated_players), len(self.seated_players) == 0, balance, table=self)
+        #self.seated_players.append(Player(len(self.seated_players), len(self.seated_players) == 0, balance, table=self))
 
     def player_left(self, player_id):
         self.seated_players.pop(player_id)

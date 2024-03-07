@@ -21,13 +21,14 @@ class Player():
 
 
     def perform_action(self):
-        print(f"PLAYER {self.player_id} ACTION")
+        #print(f"PLAYER {self.player_id} ACTION")
         action_to_append = self.strategy.compute_action(table=self.table, player_id=self.player_id)
         
         if action_to_append is None: return None
         if action_to_append.action_str == "Bet" or action_to_append.action_str == "Raise":
             amount = self.strategy.compute_bet_amount(self.table, self.player_id)
-            self.balance -= amount
+            self.balance = round(self.balance - amount, 2)
+            #self.balance -= amount
             action_to_append.bet_amount = amount
         if action_to_append.action_str == "Fold":
             self.folded = True
@@ -40,7 +41,8 @@ class Player():
         self.hand = cards
     
     def add_to_balance(self, change):
-        self.balance += change
+        self.balance = round(self.balance + change, 2)
+        #self.balance += change
 
     def __repr__(self) -> str:
         return_str = f"Player {self.player_id}\nIs Us: {self.is_us}\nHand: {self.hand} - Folded: {self.folded}\nBalance: {self.balance}\n Actions\n"

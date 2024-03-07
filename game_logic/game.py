@@ -7,7 +7,7 @@ import os
 import csv
 
 class Game():
-    def __init__(self, game_id, player_list: list[Player], return_function, table, start_balance: int = None, save_game = False) -> None:
+    def __init__(self, game_id, player_list: dict[int, Player], return_function, table, start_balance: int = None, save_game = False) -> None:
         self.game_id = game_id
         self.player_list = player_list
         self.active_player_list = {}
@@ -26,8 +26,8 @@ class Game():
         self.game_ended = False
         self.dealer = 4
         self.blinds: list[int] = [(self.dealer + 1) % len(self.player_list), (self.dealer + 2) % len(self.player_list)]
-        self.current_player: int = (self.dealer + 3) % len(self.player_list)
-        self.trans_player:int = (self.current_player - 1) % len(self.player_list)
+        self.current_player: int = self.get_next_player(self.get_next_player(self.get_next_player(self.dealer, use_standard_player_list=True), use_standard_player_list=True), use_standard_player_list=True)
+        self.trans_player:int = self.get_next_player(self.get_next_player(self.dealer, use_standard_player_list=True), use_standard_player_list=True)
         self.hand_evaluator = Hand_Evaluator()
         self.save_game = save_game
 
@@ -46,6 +46,35 @@ class Game():
 
         action_performed = self.player_performed_action()
 
+    def get_next_player(self, id = None, use_standard_player_list = False):
+        
+        if id is None:
+            curr = self.current_player
+        else:
+            curr = id
+
+        
+        print(f"\nGETNEXTPLAYER CALLED {curr}")
+
+        player_list = self.active_player_list
+        if use_standard_player_list:
+            player_list = self.player_list
+        print(list(player_list.keys()))
+        res_player = None
+        counter = 0
+        while res_player is None:
+            curr = (curr + 1) % len(list(player_list.keys()))
+            if curr not in list(player_list.keys()):
+                continue
+            if not player_list[curr].folded and not player_list[curr].all_in:
+                res_player = curr
+            counter += 1
+            if counter == len(list(player_list.keys())):
+                print(f"NO PLAYERS")
+                input("!!")
+        self.current_player = curr
+        print(f"GETNEXTPLAYER RETURNED {curr}\n")
+        return curr
 
     def player_performed_action(self):
         player_id = self.current_player
@@ -53,12 +82,12 @@ class Game():
         
         if self.game_state == "Showdown":
             return None
-        print(list(self.active_player_list.keys()))
-        print(player_id)
-        print(f"BAL {player_id}: {self.active_player_list[self.current_player].balance}")
+        #print(list(self.active_player_list.keys()))
+        #print(player_id)
+        #print(f"BAL {player_id}: {self.active_player_list[self.current_player].balance}")
         action = self.active_player_list[player_id].perform_action()
         if action is None:
-            self.current_player = (self.current_player + 1) % len(list(self.active_player_list.keys()))
+            self.current_player = self.get_next_player()
             return None
 
         if self.game_state in list(self.action_map.keys()):
@@ -68,11 +97,12 @@ class Game():
         if action.action_str == "Raise" or action.action_str == "Bet" or action.action_str == "Call":
             self.pot = round(self.pot + action.bet_amount, 2)
         if action.action_str == "Raise":
-            self.trans_player = player_id - 1 % len(self.player_list)
+            self.trans_player = player_id - 1 % len(self.active_player_list)
         if player_id == self.trans_player:
-            self.transition_state()
+            self.transition_state()                 #TODO: This line never happens...... (i think)
         else:
-            self.current_player = (self.current_player + 1) % len(self.player_list)
+            print(action)
+            self.current_player = self.get_next_player()
         
         return action
 
@@ -108,7 +138,7 @@ class Game():
         self.game_state = new_state
 
         if new_state in ["Flop", "Turn", "River"]:
-            self.current_player = (self.dealer + 1) % len(self.player_list)
+            self.current_player = self.get_next_player(self.dealer)
             self.trans_player = self.dealer
 
 
@@ -140,10 +170,15 @@ class Game():
         
         
     def deal_hands(self):
-        for player in self.table.seated_players:
+        print(f"Dealing hands...")
+        for player_id in list(self.player_list.keys()):
+            player = self.player_list[player_id]
             if not player.balance <= 0.01:
-                self.active_player_list[len(self.active_player_list.keys())] = player
+                self.active_player_list[player_id] = player
                 player.set_hand(self.table.deck.draw_cards(2))
+                print(f"  P {player_id}: {player.hand}")
+        print(f"Hands dealt")
+        
     
     def deal_table(self, amount):
         self.cards_on_table += self.table.deck.draw_cards(amount)

@@ -2,7 +2,7 @@ from .card import Card
 import random
 
 class Deck():
-    def __init__(self, set_of_cards: int = 1):
+    def __init__(self, set_of_cards: int = 3):
         self.all_suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
         self.all_ranks = [2,3,4,5,6,7,8,9,10,11,12,13,14]
         self.undiscovered_cards = []
