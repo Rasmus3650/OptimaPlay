@@ -22,6 +22,8 @@ class Player():
 
     def perform_action(self):
         action_to_append = self.strategy.compute_action(table=self.table, player_id=self.player_id)
+        
+        if action_to_append is None: return None
         if action_to_append.action_str == "Bet" or action_to_append.action_str == "Raise":
             amount = self.strategy.compute_bet_amount(self.table, self.player_id)
             self.balance -= amount
@@ -30,6 +32,7 @@ class Player():
             self.folded = True
         
         self.action_history.append(action_to_append)
+        #print(f"ID {self.player_id}: {action_to_append}")
         return action_to_append
     
     def set_hand(self, cards: list[Card]):
