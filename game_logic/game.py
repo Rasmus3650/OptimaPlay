@@ -180,15 +180,13 @@ class Game():
             player = self.player_list[player_id]
             if not player.balance <= 0.01:
                 self.active_player_list[player_id] = player
-                player.set_hand(self.table.deck.draw_cards(2))  #Hvad hvis vi løber tør for kort????
+                player.set_hand(self.table.deck.draw_cards(2))
                 print(f"  P {player_id}: {player.hand}")
         print(f"Hands dealt")
         
     
     def deal_table(self, amount):
-        self.cards_on_table += self.table.deck.draw_cards(amount)   #Hvad hvis vi løber tør for kort????
-        if self.table.deck.is_empty():                              #<-----  er måske ikke den bedste måde at gøre det på
-            self.table.deck.reset_deck()
+        self.cards_on_table += self.table.deck.draw_cards(amount)
     
     def game_over(self):
         self.game_ended = True

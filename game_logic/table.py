@@ -53,6 +53,8 @@ class Table():
         self.current_game = Game(len(self.game_history), self.seated_players, return_function=self.end_game, table=self)
         while not self.current_game.game_ended:
             action = self.current_game.player_performed_action()
+        
+        self.deck.reset_deck()
             
 
         
