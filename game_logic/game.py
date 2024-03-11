@@ -24,7 +24,7 @@ class Game():
         self.table = table
         self.return_function = return_function
         self.game_ended = False
-        self.dealer = 4
+        self.dealer = np.random.choice(list(self.player_list.keys()))
         self.blinds: list[int] = [(self.dealer + 1) % len(self.player_list), (self.dealer + 2) % len(self.player_list)]
         self.current_player: int = self.get_next_player(self.get_next_player(self.get_next_player(self.dealer, use_standard_player_list=True), use_standard_player_list=True), use_standard_player_list=True)
         self.trans_player:int = self.get_next_player(self.get_next_player(self.dealer, use_standard_player_list=True), use_standard_player_list=True)
@@ -47,45 +47,51 @@ class Game():
         action_performed = self.player_performed_action()
 
     def get_next_player(self, id = None, use_standard_player_list = False):
-        
-        if id is None:
-            curr = self.current_player
-        else:
-            curr = id
-
-        
-        print(f"\nGETNEXTPLAYER CALLED {curr}")
-
-        player_list = self.active_player_list
+        player_list = list(self.active_player_list.keys())
+        player_dict = self.active_player_list
         if use_standard_player_list:
-            player_list = self.player_list
-        print(list(player_list.keys()))
+            player_dict = self.player_list
+            player_list = list(self.player_list.keys())
+        
+        #print()
+        #print(player_list)
+        #print(id)
+        if id is None:
+            curr_idx = player_list.index(self.current_player)
+        else:
+            curr_idx = player_list.index(id)
+
+        
+        #print(f"\nGETNEXTPLAYER CALLED {curr_idx}")
+
+        
+        #print(player_list)
         res_player = None
         counter = 0
         while res_player is None:
-            curr = (curr + 1) % len(list(player_list.keys()))
-            if curr not in list(player_list.keys()):
-                continue
-            if not player_list[curr].folded and not player_list[curr].all_in:
-                res_player = curr
+            curr_idx = (curr_idx + 1) % len(player_list)
+            curr_player = player_list[curr_idx]
+            #print(f"P {curr_idx}: {player_dict[curr_player].balance}")
+            
+            if not player_dict[curr_player].folded and not player_dict[curr_player].all_in:
+                res_player = curr_player
             counter += 1
-            if counter == len(list(player_list.keys())):
+            if counter == len(player_list):
                 print(f"NO PLAYERS")
                 input("!!")
-        self.current_player = curr
-        print(f"GETNEXTPLAYER RETURNED {curr}\n")
-        return curr
+        
+        #print(f"GETNEXTPLAYER RETURNED {curr_player}\n")
+        return curr_player
 
     def player_performed_action(self):
         player_id = self.current_player
+        #print(f"PLAYER TO PERFORM ACTION: {player_id}")
         #print(f"Game state: {self.game_state}")
         
         if self.game_state == "Showdown":
             return None
-        #print(list(self.active_player_list.keys()))
-        #print(player_id)
-        #print(f"BAL {player_id}: {self.active_player_list[self.current_player].balance}")
         action = self.active_player_list[player_id].perform_action()
+        print(f"Player {player_id} performed action {action.action_str} ($ {action.bet_amount})")
         if action is None:
             self.current_player = self.get_next_player()
             return None
@@ -101,7 +107,6 @@ class Game():
         if player_id == self.trans_player:
             self.transition_state()                 #TODO: This line never happens...... (i think)
         else:
-            print(action)
             self.current_player = self.get_next_player()
         
         return action
@@ -182,6 +187,8 @@ class Game():
     
     def deal_table(self, amount):
         self.cards_on_table += self.table.deck.draw_cards(amount)
+        if self.table.deck.is_empty():
+            self.table.deck.reset_deck()
     
     def game_over(self):
         self.game_ended = True
@@ -209,20 +216,10 @@ class Game():
                     line_str += f"[],"
             line_str = line_str[:-1] + "\n"
             csv_file.write(line_str)
-     
-        for i in range(len(self.action_map[list(self.action_map.keys())[0]])):
-            line_str = f""
-            for key in list(self.action_map.keys()):
-                if len(self.action_map[key]) > i:
-                    action = self.action_map[key][i]
-                    line_str += f"[{action.player_id};{action.action_str};{action.bet_amount}],"
-                else:
-                    line_str += f"[],"
-            line_str = line_str[:-1] + "\n"
-            csv_file.write(line_str)
-        
         
         csv_file.close()
+
+
 
 
     def __repr__(self) -> str:

@@ -19,10 +19,14 @@ class Table():
 
     def get_table_id(self):
         if not os.path.exists(self.record_folder_path): return 0
-        sub_dirs = [x[0] for x in os.walk(self.record_folder_path)][1:]
-        return len(sub_dirs)
+        res = len([name for name in os.listdir(self.record_folder_path)
+            if os.path.isdir(os.path.join(self.record_folder_path, name))])
+        return res + 1
+
     
     def get_table_folder(self):
+        if not os.path.exists(self.record_folder_path):
+            os.mkdir(self.record_folder_path)
         path = os.path.join(self.record_folder_path, f"table_{self.table_id}")
         if not os.path.exists(path):
             os.mkdir(path)
@@ -40,25 +44,27 @@ class Table():
             if not player.folded: return False
         return True
     
-    def start_game(self):
+    def start_game(self, save_first = False):
+        if self.save_table and save_first:
+            save_path = self.get_game_folder(self.get_table_folder(), self.current_game.game_id)
+            print(f"SAVE_PATH: {save_path}")
+            self.current_game.record_game(save_path)
+
         self.current_game = Game(len(self.game_history), self.seated_players, return_function=self.end_game, table=self)
         while not self.current_game.game_ended:
             action = self.current_game.player_performed_action()
             
 
-        if self.save_table:
-            save_path = self.get_game_folder(self.get_table_folder(), self.current_game.game_id)
-            print(f"SAVE_PATH: {save_path}")
-            self.current_game.record_game(save_path)
+        
 
     def update_players(self):
         for player_id in list(self.seated_players.keys()):
             player = self.seated_players[player_id]
             if player.balance <= 0.01:
-                print(player_id)
-                print(list(self.seated_players.keys()))
+                #print(player_id)
+                #print(list(self.seated_players.keys()))
                 self.seated_players.pop(player_id)
-                print(list(self.seated_players.keys()))
+                #print(list(self.seated_players.keys()))
                 #input("???????")
 
 
@@ -66,8 +72,9 @@ class Table():
         print(f"RETURNREUTUNEURUERNEURNUERNU")
         self.game_history.append(self.current_game)
         self.update_players()
+        #print(self.seated_players)
         if len(list(self.seated_players.keys())) > 1:
-            self.start_game()
+            self.start_game(save_first=True)
     
     def get_side(self):
         return self.side
