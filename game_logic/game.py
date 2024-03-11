@@ -105,13 +105,13 @@ class Game():
         if action.action_str == "Raise":
             self.trans_player = player_id - 1 % len(self.active_player_list)
         if player_id == self.trans_player:
-            self.transition_state()                 #TODO: This line never happens...... (i think)
+            self.transition_state()
         else:
             self.current_player = self.get_next_player()
         
         return action
 
-    def get_winner(self) -> tuple[Player, str, int]:
+    def get_winner(self) -> tuple[Player, str, int]: #(Vi skal også have en tredje rank.... hvad nu hvis to spillere begge har par 7.... Så er det "kickeren" der afgør det)
 
         #Håndends primære rank er Royal Flush = 10, Straight Flush = 9, osv.
         #En straigh med tallene 4, 5, 6, 7, 8 har primær rank 5, fordi self.rank_list["Straight"] = 5,
@@ -180,14 +180,14 @@ class Game():
             player = self.player_list[player_id]
             if not player.balance <= 0.01:
                 self.active_player_list[player_id] = player
-                player.set_hand(self.table.deck.draw_cards(2))
+                player.set_hand(self.table.deck.draw_cards(2))  #Hvad hvis vi løber tør for kort????
                 print(f"  P {player_id}: {player.hand}")
         print(f"Hands dealt")
         
     
     def deal_table(self, amount):
-        self.cards_on_table += self.table.deck.draw_cards(amount)
-        if self.table.deck.is_empty():
+        self.cards_on_table += self.table.deck.draw_cards(amount)   #Hvad hvis vi løber tør for kort????
+        if self.table.deck.is_empty():                              #<-----  er måske ikke den bedste måde at gøre det på
             self.table.deck.reset_deck()
     
     def game_over(self):
