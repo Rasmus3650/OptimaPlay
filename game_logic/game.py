@@ -119,20 +119,60 @@ class Game():
         highest_hand_primary_rank = 0
         highest_hand_secondary_rank = 0
         highest_hand_str = ""
+        highest_hand_primary_secondary_rank = 0
         winner = None
+
+        player_results = {}
         
         for player_id in list(self.active_player_list.keys()):
             curr_player = self.active_player_list[player_id]
-            hand_str, hand_secondary_rank = self.hand_evaluator.compute_hand(curr_player.hand, self.cards_on_table)
-            if self.rank_list[hand_str] >= highest_hand_primary_rank:
-                if hand_secondary_rank < highest_hand_secondary_rank: #Måske håndtere hvis de er lig med hinanden???
-                    continue
-                highest_hand_primary_rank = self.rank_list[hand_str]
-                highest_hand_secondary_rank = hand_secondary_rank
-                highest_hand_str = hand_str
-                winner = curr_player
+            (hand_str, hand_secondary_rank), kicker, hand_primary_secondary_rank = self.hand_evaluator.compute_hand(curr_player.hand, self.cards_on_table)
+            player_results[player_id] = [hand_str, hand_secondary_rank, kicker, hand_primary_secondary_rank]
+
+            
+        for p_id in list(player_results.keys()):
+            print(f"Player {p_id}: '{self.active_player_list[p_id].hand}'")
         
-        return (winner, highest_hand_str, highest_hand_secondary_rank)
+        print(self.cards_on_table)
+        for p_id in list(player_results.keys()):
+            p_str = f"Player {p_id}: '{player_results[p_id][0]}' - Rank: {player_results[p_id][1]}"
+            if player_results[p_id][3] is not None:
+                p_str += f" ({player_results[p_id][3]})"
+            p_str += f" - Kicker: {player_results[p_id][2]}"
+            print(p_str)
+
+        sorted_players = dict(sorted(player_results.items(), key=lambda x: self.rank_list[x[1][0]], reverse=True))
+        highest_hand_str = sorted_players[list(sorted_players.keys())[0]][0]
+        possible_winners = {k: v for k, v in sorted_players.items() if sorted_players[k][0] == highest_hand_str}
+
+        print(highest_hand_str)
+        print(f"Possible winners by hand_str:")
+        print(possible_winners)
+
+        if len(list(possible_winners.keys())) == 1:
+            winning_id = list(possible_winners.keys())[0]
+            return self.active_player_list[winning_id], possible_winners[winning_id][0], possible_winners[winning_id][1]
+        
+        sorted_possible_winners = dict(sorted(possible_winners.items(), key=lambda x: x[1][1], reverse=True))
+        highest_hand_primary_rank = sorted_possible_winners[list(sorted_possible_winners.keys())[0]][1]
+
+        possible_rank_winners = {k: v for k, v in sorted_possible_winners.items() if sorted_possible_winners[k][1] == highest_hand_primary_rank}
+        
+        print(f"Possible winners by rank:")
+        print(possible_rank_winners)
+
+        if len(list(possible_rank_winners.keys())) == 1:
+            winning_id = list(possible_rank_winners.keys())[0]
+            return self.active_player_list[winning_id], possible_rank_winners[winning_id][0], possible_rank_winners[winning_id][1]
+        
+        if highest_hand_str == "Two Pairs" or highest_hand_str == "Full House":
+            sorted_edgecase_winners = dict(sorted(possible_rank_winners.items(), key=lambda x: x[1][3], reverse=True))
+            highest_hand_primary_secondary_rank = sorted_edgecase_winners[list(sorted_edgecase_winners.keys())[0]][3]
+            possible_edgecase_winners = {k: v for k, v in sorted_edgecase_winners.items() if sorted_edgecase_winners[k][3] == highest_hand_primary_secondary_rank}
+            # possible_edgecase_winners indeholder dem der har samme rank i par 1 OG par 2 (for fuldt hus er der i 3 ens og i paret)
+
+        input(f"hmmm")
+        #return (winner, highest_hand_str, highest_hand_secondary_rank)
 
     
     def transition_state(self):

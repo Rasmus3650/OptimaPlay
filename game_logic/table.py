@@ -75,8 +75,8 @@ class Table():
         self.game_history.append(self.current_game)
         self.update_players()
         #print(self.seated_players)
-        if len(list(self.seated_players.keys())) > 1:
-            self.start_game(save_first=True)
+        #if len(list(self.seated_players.keys())) > 1:
+        #    self.start_game(save_first=True)
     
     def get_side(self):
         return self.side
