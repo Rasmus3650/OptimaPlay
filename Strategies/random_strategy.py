@@ -12,7 +12,7 @@ class Random_strategy(Strategy):
         #print(f"AAAA: {table.seated_players[player_id].folded}")
         #print(f"PLAYER: {player_id}")
         #print(table.seated_players[player_id].actions[1:-1])
-        return random.choice(table.seated_players[player_id].actions[1:-1])
+        return random.choice(table.seated_players[player_id].actions)
 
     def compute_bet_amount(self, table, player_id: int):
         return round(random.uniform(0.01, table.seated_players[player_id].balance), 2)

@@ -217,20 +217,26 @@ class Hand_Evaluator():
 
     def compute_straight(self, hand, card_on_table, hand_ranks, table_ranks):
         all_cards = hand + card_on_table
-        sorted_cards = sorted(all_cards, key=lambda x: x.current_rank)
+        sorted_cards = sorted(all_cards, key=lambda x: x.current_rank, reverse=True)
 
+        for card in sorted_cards:
+            if card.current_rank == 14:
+                sorted_cards.append(Card(1, card.current_suit))
+                break
 
+        
         start_rank = None
         straight_list = []
 
+
         for card in sorted_cards:
-            if start_rank == None or (len(straight_list) > 0 and (card.current_rank != straight_list[-1].current_rank + 1 and card.current_rank != straight_list[-1].current_rank)):
+            if start_rank == None or (len(straight_list) > 0 and (card.current_rank != straight_list[-1].current_rank - 1 and card.current_rank != straight_list[-1].current_rank)):
                 start_rank = card.current_rank
                 straight_list = [card]
-            elif len(straight_list) > 0 and card.current_rank == (straight_list[-1].current_rank) + 1:
+            elif len(straight_list) > 0 and card.current_rank == (straight_list[-1].current_rank) - 1:
                 straight_list.append(card)
                 if len(straight_list) == 5:
-                    return True, ("Straight", card.current_rank), []
+                    return True, ("Straight", start_rank), []
 
         return False, ("", 0), []
 

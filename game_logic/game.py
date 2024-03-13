@@ -10,6 +10,9 @@ class Game():
     def __init__(self, game_id, player_list: dict[int, Player], return_function, table, start_balance: int = None, save_game = False) -> None:
         self.game_id = game_id
         self.player_list = player_list
+        self.initial_balances = {}
+        for p_id in list(self.player_list.keys()):
+            self.initial_balances[p_id] = self.player_list[p_id].balance
         self.active_player_list = {}
         #for i, player in enumerate(self.player_list):   #Is overwritten in deal_hands
         #    self.active_player_list[i] = player
@@ -32,7 +35,9 @@ class Game():
         self.save_game = save_game
 
         self.action_map = {"Pre-flop": [], "Flop": [], "Turn": [], "River": []}
-        self.winner = None
+        self.winner_arr = []
+
+        self.all_in_players = []
 
         self.transition_state()
         
@@ -45,69 +50,104 @@ class Game():
             action_performed = self.player_performed_action()
 
         action_performed = self.player_performed_action()
+    
+    def get_player_after_dealer(self):
+        player_list = list(self.player_list.keys())
 
-    def get_next_player(self, id = None, use_standard_player_list = False):
+        res_player = None
+        counter = 0
+        curr_player = self.dealer
+
+        while res_player is None:
+            curr_player = (curr_player + 1) % len(player_list)
+
+            if curr_player in list(self.active_player_list.keys()):
+                return curr_player
+            counter += 1
+
+            if counter == len(player_list):
+                print(f"NO PLAYERS!!!!!!!")
+                input("")
+
+
+
+    def get_next_player(self, id = None, use_standard_player_list = False, reverse = False):
         player_list = list(self.active_player_list.keys())
         player_dict = self.active_player_list
         if use_standard_player_list:
             player_dict = self.player_list
             player_list = list(self.player_list.keys())
         
-        #print()
-        #print(player_list)
-        #print(id)
+        if reverse: keyword = "before"
+        else: keyword = "after"
+
         if id is None:
+            print(f"Finding player {keyword}: {self.current_player} - ", end="")
             curr_idx = player_list.index(self.current_player)
         else:
+            print(f"Finding player {keyword}: {id} - ", end="")
             curr_idx = player_list.index(id)
-
-        
-        #print(f"\nGETNEXTPLAYER CALLED {curr_idx}")
-
-        
-        #print(player_list)
+        print(player_list)
         res_player = None
         counter = 0
-        while res_player is None:
-            curr_idx = (curr_idx + 1) % len(player_list)
-            curr_player = player_list[curr_idx]
-            #print(f"P {curr_idx}: {player_dict[curr_player].balance}")
+        while res_player is None:         #TODO TRANSITION TO NOT BE WHILE LOOP
+            if reverse:
+                curr_idx = (curr_idx - 1) % len(player_list)
+            else:
+                curr_idx = (curr_idx + 1) % len(player_list)
+            curr_player = player_list[curr_idx]         #Replace curr_player with res_player? effectively ending while loop after 1 iter??
             
             if not player_dict[curr_player].folded and not player_dict[curr_player].all_in:
                 res_player = curr_player
             counter += 1
             if counter == len(player_list):
                 print(f"NO PLAYERS")
+                print(player_list)
                 input("!!")
         
         #print(f"GETNEXTPLAYER RETURNED {curr_player}\n")
+        print(f"Found {curr_player}")
         return curr_player
 
     def player_performed_action(self):
         player_id = self.current_player
-        #print(f"PLAYER TO PERFORM ACTION: {player_id}")
+        print(f"PLAYER TO PERFORM ACTION: {player_id}")
+        next_player = self.get_next_player(player_id)
+        previous_player = self.get_next_player(player_id, reverse=True)
         #print(f"Game state: {self.game_state}")
         
         if self.game_state == "Showdown":
             return None
         action = self.active_player_list[player_id].perform_action()
         print(f"Player {player_id} performed action {action.action_str} ($ {action.bet_amount})")
+
+        if self.active_player_list[player_id].folded:
+            self.active_player_list.pop(player_id)
+        elif self.active_player_list[player_id].all_in:
+            self.all_in_players.append(self.active_player_list.pop(player_id))
+
+        if len(list(self.active_player_list.keys())) == 1:
+            self.transition_state(showdown=True)
+
         if action is None:
-            self.current_player = self.get_next_player()
+            self.current_player = next_player
             return None
 
         if self.game_state in list(self.action_map.keys()):
             self.action_map[self.game_state].append(action)
 
         #print(f"Player {player_id} performed {action}\n")
-        if action.action_str == "Raise" or action.action_str == "Bet" or action.action_str == "Call":
+        if action.action_str == "Raise" or action.action_str == "Call":
             self.pot = round(self.pot + action.bet_amount, 2)
         if action.action_str == "Raise":
-            self.trans_player = player_id - 1 % len(self.active_player_list)
+            #self.trans_player = player_id - 1 % len(self.active_player_list)
+            self.trans_player = previous_player
+            print(list(self.active_player_list.keys()))
+            print(f"New Trans player: {self.trans_player}")
         if player_id == self.trans_player:
             self.transition_state()
         else:
-            self.current_player = self.get_next_player()
+            self.current_player = next_player
         
         return action
 
@@ -122,68 +162,90 @@ class Game():
         highest_hand_primary_secondary_rank = 0
         winner = None
 
-        player_results = {}
+        player_results = {} #fx. player_results[0] = ["One Pair", 11, [14, 12, 9], None]
         
         for player_id in list(self.active_player_list.keys()):
             curr_player = self.active_player_list[player_id]
             (hand_str, hand_secondary_rank), kicker, hand_primary_secondary_rank = self.hand_evaluator.compute_hand(curr_player.hand, self.cards_on_table)
             player_results[player_id] = [hand_str, hand_secondary_rank, kicker, hand_primary_secondary_rank]
 
-            
-        for p_id in list(player_results.keys()):
-            print(f"Player {p_id}: '{self.active_player_list[p_id].hand}'")
-        
-        print(self.cards_on_table)
-        for p_id in list(player_results.keys()):
+        """
+        for p_id in list(player_results.keys()):    #Godt for debugging
             p_str = f"Player {p_id}: '{player_results[p_id][0]}' - Rank: {player_results[p_id][1]}"
             if player_results[p_id][3] is not None:
                 p_str += f" ({player_results[p_id][3]})"
             p_str += f" - Kicker: {player_results[p_id][2]}"
             print(p_str)
+        """
 
         sorted_players = dict(sorted(player_results.items(), key=lambda x: self.rank_list[x[1][0]], reverse=True))
         highest_hand_str = sorted_players[list(sorted_players.keys())[0]][0]
         possible_winners = {k: v for k, v in sorted_players.items() if sorted_players[k][0] == highest_hand_str}
 
-        print(highest_hand_str)
-        print(f"Possible winners by hand_str:")
-        print(possible_winners)
-
         if len(list(possible_winners.keys())) == 1:
             winning_id = list(possible_winners.keys())[0]
-            return self.active_player_list[winning_id], possible_winners[winning_id][0], possible_winners[winning_id][1]
+            return [[self.active_player_list[winning_id], possible_winners[winning_id][0], possible_winners[winning_id][1]]]
         
         sorted_possible_winners = dict(sorted(possible_winners.items(), key=lambda x: x[1][1], reverse=True))
         highest_hand_primary_rank = sorted_possible_winners[list(sorted_possible_winners.keys())[0]][1]
 
         possible_rank_winners = {k: v for k, v in sorted_possible_winners.items() if sorted_possible_winners[k][1] == highest_hand_primary_rank}
-        
-        print(f"Possible winners by rank:")
-        print(possible_rank_winners)
 
         if len(list(possible_rank_winners.keys())) == 1:
             winning_id = list(possible_rank_winners.keys())[0]
-            return self.active_player_list[winning_id], possible_rank_winners[winning_id][0], possible_rank_winners[winning_id][1]
+            return [[self.active_player_list[winning_id], possible_rank_winners[winning_id][0], possible_rank_winners[winning_id][1]]]
         
+        new_possible_winners = possible_rank_winners
+
         if highest_hand_str == "Two Pairs" or highest_hand_str == "Full House":
             sorted_edgecase_winners = dict(sorted(possible_rank_winners.items(), key=lambda x: x[1][3], reverse=True))
             highest_hand_primary_secondary_rank = sorted_edgecase_winners[list(sorted_edgecase_winners.keys())[0]][3]
-            possible_edgecase_winners = {k: v for k, v in sorted_edgecase_winners.items() if sorted_edgecase_winners[k][3] == highest_hand_primary_secondary_rank}
-            # possible_edgecase_winners indeholder dem der har samme rank i par 1 OG par 2 (for fuldt hus er der i 3 ens og i paret)
+            new_possible_winners = {k: v for k, v in sorted_edgecase_winners.items() if sorted_edgecase_winners[k][3] == highest_hand_primary_secondary_rank}
+            if len(list(new_possible_winners.keys())) == 1:
+                winning_id = list(new_possible_winners.keys())[0]
+                return [[self.active_player_list[winning_id], new_possible_winners[winning_id][0], new_possible_winners[winning_id][1]]]
 
-        input(f"hmmm")
-        #return (winner, highest_hand_str, highest_hand_secondary_rank)
+        p_ids = list(new_possible_winners.keys())
+        kickers = len(new_possible_winners[p_ids[0]][2])
+
+        if kickers == 0:
+            return [[self.active_player_list[winning_id], new_possible_winners[winning_id][0], new_possible_winners[winning_id][1]] for winning_id in list(new_possible_winners.keys())]
+
+        highest_kicker = 0
+        highest_kicker_pid = []
+
+        for i in range(kickers):
+            highest_kicker = 0
+            highest_kicker_pid = []
+            for p_id in p_ids:
+                curr_kick = new_possible_winners[p_id][2][i]
+                if curr_kick > highest_kicker:
+                    highest_kicker = curr_kick
+                    highest_kicker_pid = [p_id]
+                elif curr_kick == highest_kicker:
+                    highest_kicker_pid.append(p_id)
+    
+            if len(highest_kicker_pid) == 1:
+                break
+
+        winners = {k: v for k, v in new_possible_winners.items() if k in highest_kicker_pid}
+
+        return [[self.active_player_list[winning_id], winners[winning_id][0], winners[winning_id][1]] for winning_id in list(winners.keys())]
+
 
     
-    def transition_state(self):
+    def transition_state(self, showdown = False):
         if 5 > self.all_game_states.index(self.game_state) and self.all_game_states.index(self.game_state) > 0:
-                self.pot_history.append(self.pot)
-        new_state = self.all_game_states[self.all_game_states.index(self.game_state) + 1 % len(self.all_game_states)]
+            self.pot_history.append(self.pot)
+        if showdown:
+            new_state = "Showdown"
+        else:
+            new_state = self.all_game_states[self.all_game_states.index(self.game_state) + 1 % len(self.all_game_states)]
         print(f"Game state transitioned from '{self.game_state}' to '{new_state}'")
         self.game_state = new_state
 
         if new_state in ["Flop", "Turn", "River"]:
-            self.current_player = self.get_next_player(self.dealer)
+            self.current_player = self.get_player_after_dealer()
             self.trans_player = self.dealer
 
 
@@ -203,13 +265,21 @@ class Game():
            new_state = "Conclusion" 
             
         if new_state == "Conclusion":
-            self.winner, winner_hand, winner_hand_rank = self.get_winner()
-            
-            for key in list(self.active_player_list.keys()):
-                print(f"Player {key} hand: {self.active_player_list[key].hand}")
-            print(f"Table: {self.cards_on_table}")
-            print(f"Winner: Player {self.winner.player_id} with {winner_hand} (rank {winner_hand_rank})")
-            self.winner.add_to_balance(self.pot)
+
+            #for key in list(self.active_player_list.keys()):
+            #    print(f"Player {key} hand: {self.active_player_list[key].hand}")
+            #print(f"Table: {self.cards_on_table}")
+
+            winners = self.get_winner()
+
+            #print(f"Amount of winners: {len(winners)}")
+            print(f"Winners:")
+            for winner in winners:
+                print(f"  Player {winner[0].player_id}")
+                #print(f"    {winner[1]} ({winner[2]})")
+                winner[0].add_to_balance(round(self.pot / len(winners), 2))
+                self.winner_arr.append(winner[0])
+
             self.game_over()
 
         
@@ -226,6 +296,7 @@ class Game():
         
     
     def deal_table(self, amount):
+        print(f"Dealing on table")
         self.cards_on_table += self.table.deck.draw_cards(amount)
     
     def game_over(self):
@@ -256,6 +327,24 @@ class Game():
             csv_file.write(line_str)
         
         csv_file.close()
+
+
+        header_str = f""
+        bal_str = f""
+        for p_id in list(self.initial_balances.keys()):
+            header_str += f"P {p_id}, "
+            bal_str += f"{self.initial_balances[p_id]}, "
+        header_str = header_str[:-2] + "\n"
+        bal_str = bal_str[:-2]
+
+        csv_file = open(os.path.join(game_folder, f"InitBals.csv"), "w")
+        csv_file.write(header_str)
+        csv_file.write(bal_str)
+
+        csv_file.close()
+
+
+
 
 
 

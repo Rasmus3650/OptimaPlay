@@ -16,7 +16,7 @@ class Player():
         self.hand = []                                                              # List of 2 cards
         self.play_style = ["Aggressive", "Passive"]                                 # Class labels for detected playstyles
         self.strategy = strategy()                                                  # Call the Strategy with the correct strategy, function
-        self.actions =  [Player_Action(table, self.player_id, action) for action in ["Fold", "Check", "Call", "Bet", "Raise"]]       # Set of possible actions
+        self.actions =  [Player_Action(table, self.player_id, action) for action in ["Fold", "Check", "Call", "Raise"]]       # Set of possible actions
 
 
 
@@ -25,11 +25,12 @@ class Player():
         action_to_append = self.strategy.compute_action(table=self.table, player_id=self.player_id)
         
         if action_to_append is None: return None
-        if action_to_append.action_str == "Bet" or action_to_append.action_str == "Raise":
+        if action_to_append.action_str == "Raise":
             amount = self.strategy.compute_bet_amount(self.table, self.player_id)
             self.balance = round(self.balance - amount, 2)
-            #self.balance -= amount
             action_to_append.bet_amount = amount
+            if self.balance < 0.01:
+                self.all_in = True
         if action_to_append.action_str == "Fold":
             self.folded = True
         

@@ -18,7 +18,7 @@ class Table():
         
 
     def get_table_id(self):
-        if not os.path.exists(self.record_folder_path): return 0
+        if not os.path.exists(self.record_folder_path): return 1
         res = len([name for name in os.listdir(self.record_folder_path)
             if os.path.isdir(os.path.join(self.record_folder_path, name))])
         return res + 1
@@ -66,6 +66,7 @@ class Table():
                 #print(player_id)
                 #print(list(self.seated_players.keys()))
                 self.seated_players.pop(player_id)
+                
                 #print(list(self.seated_players.keys()))
                 #input("???????")
 
@@ -75,8 +76,8 @@ class Table():
         self.game_history.append(self.current_game)
         self.update_players()
         #print(self.seated_players)
-        #if len(list(self.seated_players.keys())) > 1:
-        #    self.start_game(save_first=True)
+        if len(list(self.seated_players.keys())) > 1:
+            self.start_game(save_first=True)
     
     def get_side(self):
         return self.side
