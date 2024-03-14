@@ -9,8 +9,9 @@ class Strategy():
         pass
     
     def compute_action(self, table, player_id: int) -> Player_Action:
-        if table.seated_players[player_id].folded:
-            return None
+        if table.seated_players[player_id].folded or table.seated_players[player_id].all_in:
+            return "NoAction"
+        return "Action"
 
     def compute_bet_amount(self, table, player_id: int):
         pass

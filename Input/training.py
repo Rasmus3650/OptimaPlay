@@ -6,13 +6,13 @@ from game_logic.table import Table
 from game_logic.deck import Deck
 from game_logic.player import Player
 from game_logic.game import Game
-from game_logic.game import Game
 
 class Training():
     def __init__(self, number_of_tables: int = 1) -> None:
         self.table_list = {}
         for i in range(number_of_tables):
             self.table_list[i]=Table(1.6, i)
+        
         for table in list(self.table_list.keys()):
             for i in range(6):
                 self.table_list[table].player_joined()

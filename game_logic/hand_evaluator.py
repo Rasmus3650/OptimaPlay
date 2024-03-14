@@ -6,7 +6,7 @@ class Hand_Evaluator():
     def __init__(self) -> None:
         pass
     
-    def compute_hand(self, hand: list[Card], card_on_table: list[Card]) -> tuple[str, int]: #fx: ("One Pair", 6) Har et par 6
+    def compute_hand(self, hand: list[Card], card_on_table: list[Card]) -> tuple[tuple[str, int], list[int], int]: #fx: '("Two Pairs", 6), [14], 3'      Har et par 6 & et par 3 med kicker 14
         
         # TODO Needs Testing
 
@@ -20,55 +20,55 @@ class Hand_Evaluator():
         hand_ranks = [hand[0].current_rank, hand[1].current_rank]
         table_ranks = [elem.current_rank for elem in card_on_table]
         
-        royal_flush, royal_flush_res = self.compute_straight_flush(hand, card_on_table, hand_suits, table_suits, royal=True)
+        royal_flush, royal_flush_res, kicker = self.compute_straight_flush(hand, card_on_table, hand_suits, table_suits, royal=True)
         if royal_flush:
             #print(f"ROYAL FLUSH: {royal_flush}:\n  {royal_flush_res}")
-            return royal_flush_res
+            return royal_flush_res, kicker, None
             
-        straight_flush, straight_flush_res = self.compute_straight_flush(hand, card_on_table, hand_suits, table_suits, royal=False)
+        straight_flush, straight_flush_res, kicker = self.compute_straight_flush(hand, card_on_table, hand_suits, table_suits, royal=False)
         if straight_flush:
             #print(f"STRAIGHT FLUSH: {straight_flush}:\n  {straight_flush_res}")
-            return straight_flush_res
+            return straight_flush_res, kicker, None
         
-        four_of_a_kind, four_of_a_kind_res = self.compute_four_of_a_kind(hand, card_on_table, hand_ranks, table_ranks)
+        four_of_a_kind, four_of_a_kind_res, kicker = self.compute_four_of_a_kind(hand, card_on_table, hand_ranks, table_ranks)
         if four_of_a_kind:
             #print(f"FOUR OF A KIND: {four_of_a_kind}:\n  {four_of_a_kind_res}")
-            return four_of_a_kind_res
+            return four_of_a_kind_res, kicker, None
         
-        full_house, full_house_res = self.compute_full_house(hand, card_on_table, hand_ranks, table_ranks)
+        full_house, full_house_res, kicker, second_rank = self.compute_full_house(hand, card_on_table, hand_ranks, table_ranks)
         if full_house:
             #print(f"FULL HOUSE: {full_house}:\n  {full_house_res}")
-            return full_house_res
+            return full_house_res, kicker, second_rank
 
-        flush, flush_res = self.compute_flush(hand, card_on_table, hand_suits, table_suits)
+        flush, flush_res, kicker = self.compute_flush(hand, card_on_table, hand_suits, table_suits)
         if flush:
             #print(f"FLUSH: {flush}:\n  {flush_res}")
-            return flush_res
+            return flush_res, kicker, None
         
-        straight, straight_res = self.compute_straight(hand, card_on_table, hand_ranks, table_ranks)
+        straight, straight_res, kicker = self.compute_straight(hand, card_on_table, hand_ranks, table_ranks)
         if straight:
             #print(f"STRAIGHT: {straight}:\n  {straight_res}")
-            return straight_res
+            return straight_res, kicker, None
         
-        three_of_a_kind, three_of_a_kind_res = self.compute_three_of_a_kind(hand, card_on_table, hand_ranks, table_ranks)
+        three_of_a_kind, three_of_a_kind_res, kicker = self.compute_three_of_a_kind(hand, card_on_table, hand_ranks, table_ranks)
         if three_of_a_kind:
             #print(f"THREE OF A KIND: {three_of_a_kind}:\n  {three_of_a_kind_res}")
-            return three_of_a_kind_res
+            return three_of_a_kind_res, kicker, None
         
-        two_pairs, two_pairs_res = self.compute_pairs(hand, card_on_table, hand_ranks, table_ranks, amount_of_pairs=2)
+        two_pairs, two_pairs_res, kicker, second_rank = self.compute_two_pairs(hand, card_on_table, hand_ranks, table_ranks)
         if two_pairs:
             #print(f"TWO PAIRS: {two_pairs}:\n  {two_pairs_res}")
-            return two_pairs_res
+            return two_pairs_res, kicker, second_rank
         
-        one_pair, one_pairs_res = self.compute_pairs(hand, card_on_table, hand_ranks, table_ranks, amount_of_pairs=1)
+        one_pair, one_pairs_res, kicker = self.compute_one_pair(hand, card_on_table, hand_ranks, table_ranks)
         if one_pair:
             #print(f"ONE PAIR: {one_pair}:\n  {one_pairs_res}")
-            return one_pairs_res
+            return one_pairs_res, kicker, None
 
-        high_card, high_card_res = self.compute_high_card(hand, card_on_table, hand_ranks, table_ranks)
+        high_card, high_card_res, kicker = self.compute_high_card(hand, card_on_table, hand_ranks, table_ranks)
         if high_card:
             #print(f"HIGH CARD: {high_card}:\n  {high_card_res}")
-            return high_card_res
+            return high_card_res, kicker, None
         
         print(f"ERROR: this shouldn't happen")
         return None
@@ -118,9 +118,9 @@ class Hand_Evaluator():
                     elif len(straight_list) > 0 and card.current_rank == (straight_list[-1].current_rank) + 1:
                         straight_list.append(card)
                         if len(straight_list) == 5:
-                            return True, ("Straight Flush", card.current_rank)
+                            return True, ("Straight Flush", card.current_rank), []
 
-        return False, ("", 0)
+        return False, ("", 0), []
 
     def compute_four_of_a_kind(self, hand, card_on_table, hand_ranks: list[str], table_ranks: list[str]):
         all_ranks = hand_ranks + table_ranks
@@ -134,9 +134,19 @@ class Hand_Evaluator():
         
         for rank_tup in rank_tuples:
             if rank_tup[1] >= 4:
-                return True, ("Four of a kind", rank_tup[0])  # Hvis der er 2 four of a kinds skal vi finde den største
+                kicker_amount = 1
+                kicker = []
+                if rank_tup[1] == 4:
+                    remaining_ranks = np.delete(all_ranks_unique, np.where(all_ranks_unique == rank_tup[0])[0])
+                else:
+                    remaining_ranks = all_ranks_unique
+                for rank in sorted(remaining_ranks, reverse=True):
+                    if len(kicker) == kicker_amount:
+                        break
+                    kicker.append(rank)
+                return True, ("Four of a Kind", rank_tup[0]), kicker
         
-        return False, ("", 0)
+        return False, ("", 0), []
     
     def compute_full_house(self, hand, card_on_table, hand_ranks, table_ranks):
         all_ranks = hand_ranks + table_ranks
@@ -151,24 +161,29 @@ class Hand_Evaluator():
         three_of_a_kind = False
         pair = False
         highest_rank = 0
+        three_of_a_kind_rank = 0
+        pair_rank = 0
 
         for rank_tup in rank_tuples:
             if rank_tup[1] >= 3:
                 if not three_of_a_kind: 
                     if rank_tup[0] > highest_rank:
                         highest_rank = rank_tup[0]
+                        three_of_a_kind_rank = rank_tup[0]
                     three_of_a_kind = True
                 else:
                     pair = True
+                    pair_rank = rank_tup[0]
             elif rank_tup[1] >= 2:
                 if rank_tup[0] > highest_rank:
                     highest_rank = rank_tup[0]
+                    pair_rank = rank_tup[0]
                 pair = True
         
         if three_of_a_kind and pair:
-            return True, ("Full House", highest_rank)
+            return True, ("Full House", three_of_a_kind_rank), [], pair_rank
         else:
-            return False, ("", 0)
+            return False, ("", 0), [], None
 
     def compute_flush(self, hand, card_on_table, hand_suits, table_suits):
         all_cards = hand + card_on_table
@@ -196,28 +211,34 @@ class Hand_Evaluator():
                 elif highest > highest_rank:
                     highest_rank = highest
         if flush_found:
-            return flush_found, ("Flush", highest_rank)
+            return flush_found, ("Flush", highest_rank), []
         else:
-            return flush_found, ("", highest_rank)
+            return flush_found, ("", highest_rank), []
 
     def compute_straight(self, hand, card_on_table, hand_ranks, table_ranks):
         all_cards = hand + card_on_table
-        sorted_cards = sorted(all_cards, key=lambda x: x.current_rank)
+        sorted_cards = sorted(all_cards, key=lambda x: x.current_rank, reverse=True)
 
+        for card in sorted_cards:
+            if card.current_rank == 14:
+                sorted_cards.append(Card(1, card.current_suit))
+                break
 
+        
         start_rank = None
         straight_list = []
 
+
         for card in sorted_cards:
-            if start_rank == None or (len(straight_list) > 0 and (card.current_rank != straight_list[-1].current_rank + 1 and card.current_rank != straight_list[-1].current_rank)):
+            if start_rank == None or (len(straight_list) > 0 and (card.current_rank != straight_list[-1].current_rank - 1 and card.current_rank != straight_list[-1].current_rank)):
                 start_rank = card.current_rank
                 straight_list = [card]
-            elif len(straight_list) > 0 and card.current_rank == (straight_list[-1].current_rank) + 1:
+            elif len(straight_list) > 0 and card.current_rank == (straight_list[-1].current_rank) - 1:
                 straight_list.append(card)
                 if len(straight_list) == 5:
-                    return True, ("Straight", card.current_rank)
+                    return True, ("Straight", start_rank), []
 
-        return False, ("", 0)
+        return False, ("", 0), []
 
     def compute_three_of_a_kind(self, hand, card_on_table, hand_ranks, table_ranks):
         all_ranks = hand_ranks + table_ranks
@@ -230,19 +251,31 @@ class Hand_Evaluator():
         
         highest = 0
         found_three = False
+        kicker = []
 
         for rank_tup in rank_tuples:
             if rank_tup[1] >= 3:
                 found_three = True
                 if rank_tup[0] > highest:
+                    kicker_amount = 2
+                    kicker = []
+                    if rank_tup[1] == 3:
+                        remaining_ranks = np.delete(all_ranks_unique, np.where(all_ranks_unique == rank_tup[0])[0])
+                    else:
+                        remaining_ranks = all_ranks_unique
+                    for rank in sorted(remaining_ranks, reverse=True):
+                        if len(kicker) == kicker_amount:
+                            break
+                        kicker.append(rank)
                     highest = rank_tup[0]
         
         if found_three:
-            return True, ("Three of a Kind", highest) 
+            return True, ("Three of a Kind", highest), kicker
         else:
-            return False, ("", 0)
+            return False, ("", 0), kicker
+        
 
-    def compute_pairs(self, hand, card_on_table, hand_ranks, table_ranks, amount_of_pairs):
+    def compute_two_pairs(self, hand, card_on_table, hand_ranks, table_ranks):
         all_ranks = hand_ranks + table_ranks
         all_ranks_unique = np.unique(all_ranks)
         
@@ -251,29 +284,102 @@ class Hand_Evaluator():
         for rank in all_ranks_unique:
             rank_tuples.append([rank, all_ranks.count(rank)])
         
-        pairs = 0
-        highest = 0
+        pair1_rank = 0
+        pair1_amount = 0
+        pair2_rank = 0
+        pair2_amount = 0
 
         for rank_tup_idx in range(len(rank_tuples)):
             rank_tup = rank_tuples[rank_tup_idx]
             if rank_tup[1] >= 2:
-                pairs += 1
+                if rank_tup[0] > pair1_rank:
+                    pair1_rank = rank_tup[0]
+                    pair1_amount = rank_tup[1]
+        
+        for rank_tup_idx in range(len(rank_tuples)):
+            rank_tup = rank_tuples[rank_tup_idx]
+            if rank_tup[0] == pair1_rank:
                 rank_tup[1] -= 2
-                rank_tup_idx -= 1
+            if rank_tup[1] >= 2:
+                if rank_tup[0] > pair2_rank:
+                    pair2_rank = rank_tup[0]
+                    pair2_amount = rank_tup[1]
+
+        if pair1_rank == 0 or pair2_rank == 0:
+            return False, ("", 0), [], None
+
+        
+
+        if pair1_amount > 2:
+            remaining_ranks = all_ranks_unique
+        elif pair1_amount == 2:
+            remaining_ranks = np.delete(all_ranks_unique, np.where(all_ranks_unique == pair1_rank)[0])
+        
+        if pair2_amount == 2:
+            remaining_ranks = np.delete(remaining_ranks, np.where(remaining_ranks == pair2_rank)[0])
+        
+        kicker_amount = 1
+        kicker = []
+        
+        for rank in sorted(remaining_ranks, reverse=True):
+            if len(kicker) == kicker_amount:
+                break
+            kicker.append(rank)
+
+        return True, ("Two Pairs", max(pair1_rank, pair2_rank)), kicker, min(pair1_rank, pair2_rank)
+    
+
+    def compute_one_pair(self, hand, card_on_table, hand_ranks, table_ranks):
+        all_ranks = hand_ranks + table_ranks
+        all_ranks_unique = np.unique(all_ranks)
+        
+        
+        rank_tuples = []   #list[(rank, all_ranks.count(rank))]
+        for rank in all_ranks_unique:
+            rank_tuples.append([rank, all_ranks.count(rank)])
+        
+        highest = 0
+        highest_count = 0
+
+        for rank_tup_idx in range(len(rank_tuples)):
+            rank_tup = rank_tuples[rank_tup_idx]
+            if rank_tup[1] >= 2:
                 if rank_tup[0] > highest:
                     highest = rank_tup[0]
+                    highest_count = rank_tup[1]
 
-        if amount_of_pairs == 2:
-            if pairs >= 2:
-                return True, ("Two Pairs", highest)
-            else:
-                return False, ("", 0)
-        if amount_of_pairs == 1:
-            if pairs >= 1:
-                return True, ("One Pair", highest)
-            else:
-                return False, ("", 0)
+        if highest == 0:
+            return False, ("", 0), []
+
+
+        if highest_count > 2:
+            remaining_ranks = all_ranks_unique
+        elif highest_count == 2:
+            remaining_ranks = np.delete(all_ranks_unique, np.where(all_ranks_unique == highest)[0])
+        
+        kicker = []
+        kicker_amount = 3
+
+        for rank in sorted(remaining_ranks, reverse=True):
+            if len(kicker) == kicker_amount:
+                break
+            kicker.append(rank)
+
+        return True, ("One Pair", highest), kicker
+
 
     def compute_high_card(self, hand, card_on_table, hand_ranks, table_ranks):
-        return True, ("High Card", max(hand_ranks + table_ranks))
+        all_ranks = sorted(hand_ranks + table_ranks, reverse=True)
+
+        kicker_amount = 4
+        kicker = []
+
+        remaining_ranks = all_ranks[1:]
+
+        for rank in sorted(remaining_ranks, reverse=True):
+            if len(kicker) == kicker_amount:
+                break
+            kicker.append(rank)
+
+        return True, ("High Card", all_ranks[0]), kicker
 

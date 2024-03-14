@@ -4,4 +4,4 @@ class Card():
         self.current_suit = suit
     
     def __repr__(self) -> str:
-        return f"Card: {self.current_rank} : {self.current_suit}"
+        return f'Card({self.current_rank}, "{self.current_suit}")'
