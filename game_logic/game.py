@@ -93,28 +93,7 @@ class Game():
             res_player = player_list[(curr_idx - 1) % len(player_list)]
         else:
             res_player = player_list[(curr_idx + 1) % len(player_list)]
-        
-        """
-        res_player = None
-        counter = 0
-        while res_player is None:         #TODO TRANSITION TO NOT BE WHILE LOOP
-            if reverse:
-                curr_idx = (curr_idx - 1) % len(player_list)
-            else:
-                curr_idx = (curr_idx + 1) % len(player_list)
-            curr_player = player_list[curr_idx]         #Replace curr_player with res_player? effectively ending while loop after 1 iter??
-            if curr_player.player_id in list(self.active_player_list.keys()):
-                res_player = curr_player
-            print(curr_idx)
-            input("FAFA")
-            counter += 1
-            if counter == len(player_list):
-                print(f"NO PLAYERS")
-                print(player_list)
-                input("!!")
-        """
-        
-        #print(f"GETNEXTPLAYER RETURNED {curr_player}\n")
+
         print(f"Found {res_player}")
         return res_player
 
@@ -145,11 +124,9 @@ class Game():
             self.transition_state(showdown=True)
             return action
 
-        #print(f"Player {player_id} performed {action}\n")
         if action.action_str == "Raise" or action.action_str == "Call":
             self.pot = round(self.pot + action.bet_amount, 2)
         if action.action_str == "Raise":
-            #self.trans_player = player_id - 1 % len(self.active_player_list)
             self.trans_player = previous_player
             print(list(self.active_player_list.keys()))
             print(f"New Trans player: {self.trans_player}")
@@ -274,14 +251,8 @@ class Game():
            new_state = "Conclusion" 
             
         if new_state == "Conclusion":
-
-            #for key in list(self.active_player_list.keys()):
-            #    print(f"Player {key} hand: {self.active_player_list[key].hand}")
-            #print(f"Table: {self.cards_on_table}")
-
             winners = self.get_winner()
 
-            #print(f"Amount of winners: {len(winners)}")
             print(f"Winners:")
             for winner in winners:
                 print(f"  Player {winner[0].player_id}")
