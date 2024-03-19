@@ -14,8 +14,6 @@ class Game():
         for p_id in list(self.player_list.keys()):
             self.initial_balances[p_id] = self.player_list[p_id].balance
         self.active_player_list = {}
-        #for i, player in enumerate(self.player_list):   #Is overwritten in deal_hands
-        #    self.active_player_list[i] = player
         
         self.rank_list = {"Royal Flush": 10, "Straight Flush": 9, "Four of a Kind": 8, "Full House": 7, "Flush": 6, "Straight": 5, "Three of a Kind": 4, "Two Pairs": 3, "One Pair": 2, "High Card": 1}
         
@@ -56,17 +54,19 @@ class Game():
 
         res_player = None
         counter = 0
+        curr_index = player_list.index(self.dealer)
+
         curr_player = self.dealer
 
         while res_player is None:
-            curr_player = (curr_player + 1) % len(player_list)
-
-            if curr_player in list(self.active_player_list.keys()):
-                return curr_player
+            curr_index = (curr_index + 1) % len(player_list)
+            if player_list[curr_index] in list(self.active_player_list.keys()):
+                return player_list[curr_index]
             counter += 1
 
             if counter == len(player_list):
                 print(f"NO PLAYERS!!!!!!!")
+                print((self.active_player_list.keys()))
                 input("")
 
 
@@ -88,6 +88,13 @@ class Game():
             print(f"Finding player {keyword}: {id} - ", end="")
             curr_idx = player_list.index(id)
         print(player_list)
+        
+        if reverse:
+            res_player = player_list[(curr_idx - 1) % len(player_list)]
+        else:
+            res_player = player_list[(curr_idx + 1) % len(player_list)]
+        
+        """
         res_player = None
         counter = 0
         while res_player is None:         #TODO TRANSITION TO NOT BE WHILE LOOP
@@ -96,18 +103,20 @@ class Game():
             else:
                 curr_idx = (curr_idx + 1) % len(player_list)
             curr_player = player_list[curr_idx]         #Replace curr_player with res_player? effectively ending while loop after 1 iter??
-            
-            if not player_dict[curr_player].folded and not player_dict[curr_player].all_in:
+            if curr_player.player_id in list(self.active_player_list.keys()):
                 res_player = curr_player
+            print(curr_idx)
+            input("FAFA")
             counter += 1
             if counter == len(player_list):
                 print(f"NO PLAYERS")
                 print(player_list)
                 input("!!")
+        """
         
         #print(f"GETNEXTPLAYER RETURNED {curr_player}\n")
-        print(f"Found {curr_player}")
-        return curr_player
+        print(f"Found {res_player}")
+        return res_player
 
     def player_performed_action(self):
         player_id = self.current_player
@@ -119,22 +128,22 @@ class Game():
         if self.game_state == "Showdown":
             return None
         action = self.active_player_list[player_id].perform_action()
+        if action is None:
+            self.current_player = next_player
+            return None
         print(f"Player {player_id} performed action {action.action_str} ($ {action.bet_amount})")
 
         if self.active_player_list[player_id].folded:
             self.active_player_list.pop(player_id)
         elif self.active_player_list[player_id].all_in:
             self.all_in_players.append(self.active_player_list.pop(player_id))
+        
+        if self.game_state in list(self.action_map.keys()):
+            self.action_map[self.game_state].append(action)
 
         if len(list(self.active_player_list.keys())) == 1:
             self.transition_state(showdown=True)
-
-        if action is None:
-            self.current_player = next_player
-            return None
-
-        if self.game_state in list(self.action_map.keys()):
-            self.action_map[self.game_state].append(action)
+            return action
 
         #print(f"Player {player_id} performed {action}\n")
         if action.action_str == "Raise" or action.action_str == "Call":
@@ -151,7 +160,7 @@ class Game():
         
         return action
 
-    def get_winner(self) -> tuple[Player, str, int]: #(Vi skal også have en tredje rank.... hvad nu hvis to spillere begge har par 7.... Så er det "kickeren" der afgør det)
+    def get_winner(self) -> tuple[Player, str, int]:
 
         #Håndends primære rank er Royal Flush = 10, Straight Flush = 9, osv.
         #En straigh med tallene 4, 5, 6, 7, 8 har primær rank 5, fordi self.rank_list["Straight"] = 5,
@@ -289,6 +298,8 @@ class Game():
         for player_id in list(self.player_list.keys()):
             player = self.player_list[player_id]
             if not player.balance <= 0.01:
+                player.folded = False
+                player.all_in = False
                 self.active_player_list[player_id] = player
                 player.set_hand(self.table.deck.draw_cards(2))
                 print(f"  P {player_id}: {player.hand}")
@@ -342,6 +353,9 @@ class Game():
         csv_file.write(bal_str)
 
         csv_file.close()
+
+        if len(self.action_map[list(self.action_map.keys())[0]]) == 0:
+            input("HHHHHH")
 
 
 
