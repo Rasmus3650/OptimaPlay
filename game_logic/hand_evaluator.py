@@ -1,14 +1,61 @@
 import numpy as np
 from .card import Card
+from .player import Player
 
 
 class Hand_Evaluator():
     def __init__(self) -> None:
-        pass
+        self.rank_list = {"Royal Flush": 10, "Straight Flush": 9, "Four of a Kind": 8, "Full House": 7, "Flush": 6, "Straight": 5, "Three of a Kind": 4, "Two Pairs": 3, "One Pair": 2, "High Card": 1}
+        self.cards_on_table = []
+
+    def set_cards_on_table(self, cards_on_table):
+        self.cards_on_table = cards_on_table
+    
+    def get_hand_result(self, hand):
+        return self.compute_hand(hand, self.cards_on_table)
+    
+    def compare_players(self, player1: Player, player2: Player) -> int:
+        return self.compare_hands(player1.hand, player2.hand)
+
+    def compare_hands(self, hand1: list[Card], hand2: list[Card]) -> int:
+        (hand1_str, hand1_secondary_rank), kicker1, hand1_primary_secondary_rank = self.compute_hand(hand1, self.cards_on_table)
+        (hand2_str, hand2_secondary_rank), kicker2, hand2_primary_secondary_rank = self.compute_hand(hand2, self.cards_on_table)
+
+        return_if_hand1 = -1
+        return_if_hand2 = 1
+        return_if_equal = 0
+        
+
+        if self.rank_list[hand1_str] > self.rank_list[hand2_str]:
+            return return_if_hand1
+        elif self.rank_list[hand1_str] < self.rank_list[hand2_str]:
+            return return_if_hand2
+        
+        if hand1_secondary_rank > hand2_secondary_rank:
+            return return_if_hand1
+        elif hand1_secondary_rank < hand2_secondary_rank:
+            return return_if_hand2
+        
+        if hand1_str == "Two Pairs" or hand1_str == "Full House":
+            if hand2_str != "Two Pairs" and hand2_str != "Full House":
+                print(f"This should not happen..... 'hand_evaluator.py' 'compate_hands'-method")
+                print(f"How can hand1 be 'two pairs' or 'full house' while hand2 isn't??? Shouldn't they then be caught in the first if of this method??????")
+                exit(0)
+            if hand1_primary_secondary_rank > hand2_primary_secondary_rank:
+                return return_if_hand1
+            elif hand1_primary_secondary_rank < hand2_primary_secondary_rank:
+                return return_if_hand2
+            
+        for k1, k2 in zip(kicker1, kicker2):
+            if k1 > k2:
+                return return_if_hand1
+            elif k1 < k2:
+                return return_if_hand2
+        
+        return return_if_equal
+        
     
     def compute_hand(self, hand: list[Card], card_on_table: list[Card]) -> tuple[tuple[str, int], list[int], int]: #fx: '("Two Pairs", 6), [14], 3'      Har et par 6 & et par 3 med kicker 14
-        
-        # TODO Needs Testing
 
         #Custom hands/table for testing
         #hand = [Card(12, "Hearts"), Card(2, "Clubs")]
