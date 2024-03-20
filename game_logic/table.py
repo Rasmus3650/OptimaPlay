@@ -63,9 +63,9 @@ class Table():
             winner_id = list(self.seated_players.keys())[0]
             winner = self.seated_players[winner_id]
             print(f"Balances: ")
-            print(f"  {winner_id}: {winner.balance} $ [WINNER]")
+            print(f"  {winner_id}: {winner.balance} $ [WINNER]     {type(winner.balance)}")
             for p_id in list(self.past_players.keys()):
-                print(f"  {p_id}: {self.past_players[p_id].balance} $")
+                print(f"  {p_id}: {self.past_players[p_id].balance} $     {type(self.past_players[p_id].balance)}")
         
 
     def update_players(self):
@@ -82,7 +82,7 @@ class Table():
 
 
     def end_game(self):
-        print(f"RETURNREUTUNEURUERNEURNUERNU")
+        #print(f"RETURNREUTUNEURUERNEURNUERNU")
         self.game_history.append(self.current_game)
         self.update_players()
         #print(self.seated_players)
