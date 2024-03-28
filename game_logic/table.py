@@ -98,10 +98,10 @@ class Table():
 
     def player_joined(self, balance: float = 1.6): 
         id = len(list(self.seated_players.keys()))
-        if id == 0:
-            self.seated_players[id] = Player(id, len(self.seated_players) == 0, balance, table=self, strategy=GTO_strategy)
-        else:
-            self.seated_players[id] = Player(id, len(self.seated_players) == 0, balance, table=self)
+        #if id == 0:
+        self.seated_players[id] = Player(id, len(self.seated_players) == 0, balance, table=self, strategy=GTO_strategy)
+        #else:
+        #    self.seated_players[id] = Player(id, len(self.seated_players) == 0, balance, table=self)
 
 
     def player_left(self, player_id):
