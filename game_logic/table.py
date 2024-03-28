@@ -2,6 +2,7 @@ from .game import Game
 from .deck import Deck
 from .player import Player
 import os
+from Strategies.GTO_strategy import GTO_strategy
 
 class Table():
     def __init__(self, start_balance: float, side: int, save_table = True, record_folder_path = "recorded_tables/", play_untill_1_winner = True) -> None:
@@ -95,9 +96,13 @@ class Table():
     def get_game_id(self):
         return self.current_game.game_id
 
-    def player_joined(self, balance: float = 1.6): #TESTING
-        self.seated_players[len(list(self.seated_players.keys()))] = Player(len(self.seated_players), len(self.seated_players) == 0, balance, table=self)
-        #self.seated_players.append(Player(len(self.seated_players), len(self.seated_players) == 0, balance, table=self))
+    def player_joined(self, balance: float = 1.6): 
+        id = len(list(self.seated_players.keys()))
+        if id == 0:
+            self.seated_players[id] = Player(id, len(self.seated_players) == 0, balance, table=self, strategy=GTO_strategy)
+        else:
+            self.seated_players[id] = Player(id, len(self.seated_players) == 0, balance, table=self)
+
 
     def player_left(self, player_id):
         self.seated_players.pop(player_id)
