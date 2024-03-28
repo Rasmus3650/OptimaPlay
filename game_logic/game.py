@@ -8,7 +8,7 @@ import os
 import csv
 
 class Game():
-    def __init__(self, game_id, player_list: dict[int, Player], return_function, table, start_balance: int = None, save_game = False) -> None:
+    def __init__(self, game_id, player_list: dict[int, Player], return_function, table, start_balance: int = None, save_game = False, blinds_amount = [0.01, 0.02]) -> None:
         self.game_id = game_id
         self.player_list = player_list
         self.initial_balances = {}
@@ -28,6 +28,7 @@ class Game():
         self.table = table
         self.return_function = return_function
         self.game_ended = False
+        self.blinds_amount = blinds_amount
         self.dealer = np.random.choice(list(self.player_list.keys()))
         self.blinds: list[int] = [(self.dealer + 1) % len(self.player_list), (self.dealer + 2) % len(self.player_list)]
         self.current_player: int = self.get_next_player(self.get_next_player(self.get_next_player(self.dealer, use_standard_player_list=True), use_standard_player_list=True), use_standard_player_list=True)
@@ -72,6 +73,25 @@ class Game():
                 print(f"NO PLAYERS!!!!!!!")
                 print((self.active_player_list.keys()))
                 input("")
+
+
+    def get_next_active_player(self, id):
+        print(list(self.player_list.keys()))
+        lst = [0, 1, 2, 3, 4, 5]
+        curr_idx = (lst.index(id) + 1) % len(lst)
+        counter = 0
+        while curr_idx not in list(self.active_player_list.keys()):
+            curr_idx = (curr_idx + 1) % len(lst)
+            if counter > len(lst):
+                print(f"COULD NOT GET NEXT ACTIVE PLAYER!!")
+                print(f"TRYING TO GET PLAYER AFTER PLAYER {id}")
+                print(f"PLAYER_LIST: {self.player_list}")
+                print(f"ACTIVE_PLAYER_LIST: {self.active_player_list}")
+                input(f"[ERROR]...")
+            counter += 1
+
+        return self.active_player_list[curr_idx]
+
 
 
 

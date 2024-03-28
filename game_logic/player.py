@@ -3,6 +3,8 @@ from .player_action import Player_Action
 import os, sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from Strategies.random_strategy import Random_strategy
+from Strategies.GTO_strategy import GTO_strategy
+
 
 class Player():
     def __init__(self, player_id: int, is_us: bool = False, balance: int = 1.6, strategy = Random_strategy, table = None) -> None: #TESTING (1.6)
