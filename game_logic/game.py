@@ -4,8 +4,12 @@ from .card import Card
 import numpy as np
 from .hand_evaluator import Hand_Evaluator
 from functools import cmp_to_key
+import sys
 import os
 import csv
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from Input.statistics import PokerStatistics
+
 
 class Game():
     def __init__(self, game_id, player_list: dict[int, Player], return_function, table, start_balance: int = None, save_game = False, blinds_amount = [0.01, 0.02]) -> None:
@@ -39,7 +43,7 @@ class Game():
         self.somebody_raised = False
         self.action_map = {"Pre-flop": [], "Flop": [], "Turn": [], "River": []}
         self.winner_arr = []
-
+        self.stats = PokerStatistics(len(self.active_player_list))
         self.all_in_players = []
 
         self.transition_state()
@@ -393,18 +397,28 @@ class Game():
                 player.folded = False
                 player.all_in = False
                 self.active_player_list[player_id] = player
-                player.set_hand(self.table.deck.draw_cards(2))
+                c = self.table.deck.draw_cards(2)
+                player.set_hand(c)
+                for card in c:
+                    self.stats.update_pov_count(card.current_rank, player.player_id)
                 print(f"  P {player_id}: {player.hand}")
         #print(f"Hands dealt")
         
     
     def deal_table(self, amount):
         c = self.table.deck.draw_cards(amount)
+        for card in c:
+            self.stats.update_true_count(card.current_rank)
+        for player in self.active_player_list:
+            for card in c:
+                self.stats.update_pov_count(card.current_rank, player)
         print(f"Dealing on table - {c}")
         self.cards_on_table += c
     
     def game_over(self):
         self.game_ended = True
+        self.stats.print_stats()
+        self.stats.reset_count()
         self.return_function()
     
     def record_game(self, game_folder):

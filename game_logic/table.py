@@ -85,6 +85,7 @@ class Table():
     def end_game(self):
         #print(f"RETURNREUTUNEURUERNEURNUERNU")
         self.game_history.append(self.current_game)
+        
         self.update_players()
         #print(self.seated_players)
         #if len(list(self.seated_players.keys())) > 1:
@@ -98,10 +99,10 @@ class Table():
 
     def player_joined(self, balance: float = 1.6): 
         id = len(list(self.seated_players.keys()))
-        #if id == 0:
-        self.seated_players[id] = Player(id, len(self.seated_players) == 0, balance, table=self, strategy=GTO_strategy)
-        #else:
-        #    self.seated_players[id] = Player(id, len(self.seated_players) == 0, balance, table=self)
+        if id == 0:
+            self.seated_players[id] = Player(id, len(self.seated_players) == 0, balance, table=self, strategy=GTO_strategy)
+        else:
+            self.seated_players[id] = Player(id, len(self.seated_players) == 0, balance, table=self)
 
 
     def player_left(self, player_id):
