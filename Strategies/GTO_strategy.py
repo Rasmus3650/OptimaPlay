@@ -165,6 +165,9 @@ class GTO_strategy(Strategy): #https://www.pokerprofessor.com/university/how-to-
         else:
             bet_amount = 0.0
 
+        if res_action_str is None:
+            return None
+
         res_action = Player_Action(table, player_id, res_action_str, bet_amount)
         #print(f"ACTION")
         #print(f"AAAA: {table.seated_players[player_id].folded}")
