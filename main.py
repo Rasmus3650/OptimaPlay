@@ -33,7 +33,7 @@ from game_logic.hand_evaluator import Hand_Evaluator
 
 def main():
     start_time = time.time()
-    number_of_tables=100
+    number_of_tables=1
     training_obj = Training(number_of_tables)
     end_time = time.time()
     run_time = end_time - start_time
