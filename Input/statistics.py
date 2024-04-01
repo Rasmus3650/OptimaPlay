@@ -31,7 +31,7 @@ class PokerStatistics():
                 print(f"    Pot: {pot} ({type(pot)})")
                 print(f"    Money on table: {player.total_money_on_table + player.current_money_on_table} ({type(player.total_money_on_table)} + {type(player.current_money_on_table)})")
                 self.pot_odds[player.player_id] = float(pot) / float(float(player.total_money_on_table) + float(player.current_money_on_table))
-        
+
     def print_stats(self):
         pov_count_str = "\n".join([f"Player {i}: {count}" for i, count in self.pov_count.items()])
         blockers_str = "\n".join([f"Player {i}: {blockers}" for i, blockers in enumerate(self.pov_blockers)])
