@@ -1,13 +1,13 @@
 from typing import Any
-from .player import Player
-from .card import Card
-import numpy as np
-from .hand_evaluator import Hand_Evaluator
-from functools import cmp_to_key
 import sys
 import os
 import csv
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from game_logic.player import Player
+from game_logic.card import Card
+import numpy as np
+from game_logic.hand_evaluator import Hand_Evaluator
+from functools import cmp_to_key
 from Input.statistics import PokerStatistics
 
 
@@ -43,7 +43,7 @@ class Game():
         self.somebody_raised = False
         self.action_map = {"Pre-flop": [], "Flop": [], "Turn": [], "River": []}
         self.winner_arr = []
-        self.stats = PokerStatistics(len(self.active_player_list))
+        self.stats = PokerStatistics(len(self.player_list))
         self.all_in_players = []
 
         self.transition_state()
@@ -192,7 +192,11 @@ class Game():
             self.transition_state()
         else:
             self.current_player = next_player
-        
+        player_list = []
+        for _,player in self.active_player_list.items():
+            player_list.append(player)
+        self.stats.update_pot_odds(self.pot, player_list)
+
         return action
 
     def get_winner(self) -> tuple[Player, str, int]:
@@ -399,8 +403,8 @@ class Game():
                 self.active_player_list[player_id] = player
                 c = self.table.deck.draw_cards(2)
                 player.set_hand(c)
-                for card in c:
-                    self.stats.update_pov_count(card.current_rank, player.player_id)
+                #for card in c:
+                #    self.stats.update_pov_count(card.current_rank, player.player_id)
                 print(f"  P {player_id}: {player.hand}")
         #print(f"Hands dealt")
         
@@ -418,7 +422,6 @@ class Game():
     def game_over(self):
         self.game_ended = True
         self.stats.print_stats()
-        self.stats.reset_count()
         self.return_function()
     
     def record_game(self, game_folder):

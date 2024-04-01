@@ -1,5 +1,5 @@
 
-import sys, os
+import sys, os, random
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from game_logic.card import Card
 from game_logic.table import Table
@@ -11,7 +11,7 @@ class Training():
     def __init__(self, number_of_tables: int = 1) -> None:
         self.table_list = {}
         for i in range(number_of_tables):
-            self.table_list[i]=Table(1.6, i)
+            self.table_list[i]=Table(random.randint(5,1000), i)
         
         for table in list(self.table_list.keys()):
             for i in range(6):

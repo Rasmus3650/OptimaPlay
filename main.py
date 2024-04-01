@@ -1,6 +1,7 @@
 #from Input.visual import Visual_input
 import cv2
 import numpy as np
+import time
 from PIL import ImageGrab
 from Input.training import Training
 
@@ -31,7 +32,12 @@ from game_logic.hand_evaluator import Hand_Evaluator
 
 
 def main():
-    training_obj = Training(number_of_tables=1)
+    start_time = time.time()
+    number_of_tables=100
+    training_obj = Training(number_of_tables)
+    end_time = time.time()
+    run_time = end_time - start_time
+    print(f"Total time: {run_time}\nAvg. Time Per Table: {run_time / number_of_tables}")
     #p_hands = [[Card(2, "Hearts"), Card(3, "Spades")], [Card(9, "Clubs"), Card(9, "Diamonds")], [Card(2, "Clubs"), Card(8, "Diamonds")], [Card(11, "Hearts"), Card(10, "Clubs")], [Card(7, "Diamonds"), Card(14, "Diamonds")], [Card(7, "Hearts"), Card(10, "Spades")]]
     #cards_on_table = [Card(5, "Hearts"), Card(9, "Hearts"), Card(7, "Spades"), Card(14, "Clubs"), Card(4, "Diamonds")]
     #hand_eval = Hand_Evaluator()
