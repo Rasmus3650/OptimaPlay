@@ -44,15 +44,16 @@ class Player():
             if self.balance < 0.01:
                 self.all_in = True
         if action_to_append.action_str == "Call":
-            if self.balance <= max_currently_on_table:
-                self.current_money_on_table += self.balance
-                action_to_append.bet_amount = self.balance
+            needed = max_currently_on_table - self.current_money_on_table
+            
+            self.current_money_on_table += needed
+            action_to_append.bet_amount = needed
+
+            if self.balance <= needed:
                 self.balance = 0.0
                 self.all_in = True
             else:
-                self.current_money_on_table += max_currently_on_table
-                action_to_append.bet_amount = max_currently_on_table
-                self.balance = round(self.balance - max_currently_on_table, 2)
+                self.balance = round(self.balance - needed, 2)
 
 
         if action_to_append.action_str == "Fold":

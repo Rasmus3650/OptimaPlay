@@ -43,7 +43,7 @@ class Game():
         self.somebody_raised = False
         self.action_map = {"Pre-flop": [], "Flop": [], "Turn": [], "River": []}
         self.winner_arr = []
-        self.stats = PokerStatistics(len(self.player_list))
+        self.stats = PokerStatistics(self.player_list)
         self.all_in_players = []
 
         self.transition_state()
@@ -192,10 +192,6 @@ class Game():
             self.transition_state()
         else:
             self.current_player = next_player
-        player_list = []
-        for _,player in self.active_player_list.items():
-            player_list.append(player)
-        self.stats.update_pot_odds(self.pot, player_list)
 
         return action
 
@@ -230,7 +226,6 @@ class Game():
 
         return player_groups
 
-    
     def transition_state(self, showdown = False):
         self.somebody_raised = False
         self.pot = round(self.pot + self.current_pot, 2)
@@ -250,8 +245,11 @@ class Game():
         if new_state in ["Flop", "Turn", "River"]:
             self.current_player = self.get_player_after_dealer()
             self.trans_player = self.dealer
-
-
+        player_list = []
+        for _,player in self.active_player_list.items():
+            player_list.append(player)
+        
+        self.stats.update_pot_odds(self.pot + self.current_pot, player_list)
         if new_state == "Pre-flop":
             self.deal_hands()
             #self.do_one_round()
@@ -342,6 +340,7 @@ class Game():
     def game_over(self):
         self.game_ended = True
         self.stats.print_stats()
+        input()
         self.return_function()
     
     def record_game(self, game_folder):

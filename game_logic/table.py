@@ -74,24 +74,15 @@ class Table():
         for player_id in list(self.seated_players.keys()):
             player = self.seated_players[player_id]
             if player.balance <= 0.01:
-                #print(player_id)
-                #print(list(self.seated_players.keys()))
                 removed_player = self.seated_players.pop(player_id)
                 self.past_players[removed_player.player_id] = removed_player
-                
-                #print(list(self.seated_players.keys()))
-                #input("???????")
+
 
 
     def end_game(self):
-        #print(f"RETURNREUTUNEURUERNEURNUERNU")
         self.game_history.append(self.current_game)
-        
         self.update_players()
-        #print(self.seated_players)
-        #if len(list(self.seated_players.keys())) > 1:
-        #    self.start_game(save_first=True)
-    
+
     def get_side(self):
         return self.side
     
