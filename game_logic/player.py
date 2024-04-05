@@ -37,14 +37,23 @@ class Player():
         
         if action_to_append is None: return None
         if action_to_append.action_str == "Raise":
+            print(f"Player {self.player_id} raised!!")
+            print(f"    Bal before: {self.balance} $")
             amount = self.strategy.compute_bet_amount(self.table, self.player_id, max_currently_on_table)
+            print(f"    amount: {amount}")
             self.current_money_on_table += amount
             self.balance = round(self.balance - amount, 2)
             action_to_append.bet_amount = amount
             if self.balance < 0.01:
                 self.all_in = True
+            print(f"    Bal after: {self.balance} $")
+            #input(f"Raised...")
         if action_to_append.action_str == "Call":
-            needed = max_currently_on_table - self.current_money_on_table
+            print(f"Player {self.player_id} called!!")
+            needed = round(max_currently_on_table - self.current_money_on_table, 2)
+            print(f"    Needed: {needed}")
+            print(f"    Bal before: {self.balance} $")
+            
             
             self.current_money_on_table += needed
             action_to_append.bet_amount = needed
@@ -55,7 +64,8 @@ class Player():
             else:
                 self.balance = round(self.balance - needed, 2)
 
-
+            print(f"    Bal after: {self.balance} $")
+            #input(f"Called...")
         if action_to_append.action_str == "Fold":
             self.folded = True
         

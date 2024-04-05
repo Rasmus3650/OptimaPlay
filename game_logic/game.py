@@ -17,7 +17,7 @@ class Game():
         self.player_list = player_list
         self.initial_balances = {}
         for p_id in list(self.player_list.keys()):
-            self.initial_balances[p_id] = self.player_list[p_id].balance
+            self.initial_balances[p_id] = float(self.player_list[p_id].balance)
         self.active_player_list = {}
         
         self.rank_list = {"Royal Flush": 10, "Straight Flush": 9, "Four of a Kind": 8, "Full House": 7, "Flush": 6, "Straight": 5, "Three of a Kind": 4, "Two Pairs": 3, "One Pair": 2, "High Card": 1}
@@ -45,6 +45,7 @@ class Game():
         self.winner_arr = []
         self.stats = PokerStatistics(self.player_list)
         self.all_in_players = []
+        self.log_str = f""
 
         self.transition_state()
         
@@ -161,6 +162,8 @@ class Game():
         if action is None:
             self.current_player = next_player
             return None
+
+        self.log_str += f"Player {player_id} performed action {action.action_str} ($ {action.bet_amount})\n"
         print(f"Player {player_id} performed action {action.action_str} ($ {action.bet_amount})")
 
         if self.active_player_list[player_id].folded:
@@ -181,6 +184,7 @@ class Game():
         if action.action_str == "Raise":
             self.somebody_raised = True
             self.trans_player = previous_player
+            self.log_str += f"New Trans player: {self.trans_player} (in list: {list(self.active_player_list.keys())})\n"
             print(f"New Trans player: {self.trans_player} (in list: {list(self.active_player_list.keys())})")
 
 
@@ -239,6 +243,7 @@ class Game():
             new_state = "Showdown"
         else:
             new_state = self.all_game_states[self.all_game_states.index(self.game_state) + 1 % len(self.all_game_states)]
+        self.log_str += f"Game state transitioned from '{self.game_state}' to '{new_state}'\n"
         print(f"Game state transitioned from '{self.game_state}' to '{new_state}'")
         self.game_state = new_state
 
@@ -266,14 +271,16 @@ class Game():
            new_state = "Conclusion" 
             
         if new_state == "Conclusion":
-            winners = self.get_winner()
+            self.winner_arr = self.get_winner()
 
             print(f"Winners:")
-            print(winners)
+            print(self.winner_arr)
             print(f"Side pots: {self.side_pots}")
-            print(f"total pot: {self.pot}")
+            print(f"Total pot: {self.pot}")
 
-            for winner_group in winners:
+            self.log_str += f"Winners:\n{self.winner_arr}\nSide pots: {self.side_pots}\nTotal pot: {self.pot}\n"
+
+            for winner_group in self.winner_arr:
                 is_all_in = []
                 is_not_all_in = []
                 for winner in winner_group:
@@ -283,13 +290,20 @@ class Game():
                         is_not_all_in.append(winner)
 
                 for player in is_all_in:
-                    to_add = self.side_pots[player.player_id] / len(winner_group)
+                    to_add = min(self.side_pots[player.player_id] / len(winner_group), self.pot)
+                    self.log_str += f"Adding {to_add} to player {player.player_id}\n"
                     print(f"Adding {to_add} to player {player.player_id}")
                     player.add_to_balance(to_add)
                     self.pot -= to_add
+                    if self.pot == 0:
+                        break
+                    
+                if self.pot == 0:
+                    break
 
                 for winner in is_not_all_in:
-                    to_add = self.pot / len(is_not_all_in)
+                    to_add = min(self.pot / len(is_not_all_in), self.pot)
+                    self.log_str += f"Adding {to_add} to player {winner.player_id}\n"
                     print(f"Adding {to_add} to player {winner.player_id}")
                     winner.add_to_balance(to_add)
 
@@ -313,6 +327,7 @@ class Game():
         
     def deal_hands(self):
         print(f"Dealing hands...")
+        self.log_str += f"Dealing hands...\n"
         for player_id in list(self.player_list.keys()):
             player = self.player_list[player_id]
             if not player.balance <= 0.01:
@@ -323,6 +338,7 @@ class Game():
                 player.set_hand(c)
                 #for card in c:
                 #    self.stats.update_pov_count(card.current_rank, player.player_id)
+                self.log_str += f"  P {player_id}: {player.hand}\n"
                 print(f"  P {player_id}: {player.hand}")
         #print(f"Hands dealt")
         
@@ -335,12 +351,13 @@ class Game():
             for card in c:
                 self.stats.update_pov_count(card.current_rank, player)
         print(f"Dealing on table - {c}")
+        self.log_str += f"Dealing on table - {c}\n"
         self.cards_on_table += c
     
     def game_over(self):
         self.game_ended = True
         self.stats.print_stats()
-        input()
+        #input()
         self.return_function()
     
     def record_game(self, game_folder):
@@ -382,6 +399,38 @@ class Game():
         csv_file.write(bal_str)
 
         csv_file.close()
+
+        bal_after_str = f""
+        header_after_str = f""
+        for p_id in list(self.player_list.keys()):
+            header_after_str += f"P {p_id}, "
+            bal_after_str += f"{self.player_list[p_id].balance}, "
+        header_after_str = header_after_str[:-2] + "\n"
+        bal_after_str = bal_after_str[:-2]
+
+        csv_file = open(os.path.join(game_folder, f"PostgameBals.csv"), "w")
+        csv_file.write(header_after_str)
+        csv_file.write(bal_after_str)
+
+        csv_file.close()
+
+        csv_file = open(os.path.join(game_folder, f"Winners.csv"), "w")
+        csv_file.write(str(self.winner_arr))
+
+        csv_file.close()
+
+        cards_str = f""
+        for p_id in list(self.player_list.keys()):
+            cards_str += f"P {p_id}: {self.player_list[p_id].hand}\n"
+        cards_str += f"\n{self.cards_on_table}\n"
+        csv_file = open(os.path.join(game_folder, f"Cards.csv"), "w")
+        csv_file.write(cards_str)
+
+        csv_file.close()
+
+        log_file = open(os.path.join(game_folder, f"log.txt"), "w")
+        log_file.write(self.log_str)
+        log_file.close()
 
         if len(self.action_map[list(self.action_map.keys())[0]]) == 0:
             input("HHHHHH")
