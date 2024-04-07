@@ -432,6 +432,12 @@ class Game():
         log_file.write(self.log_str)
         log_file.close()
 
+        meta_file = open(os.path.join(game_folder, f"metadata.txt"), "w")
+        meta_file.write(f"Dealer: {self.dealer}")
+        meta_file.close()
+
+        
+
         if len(self.action_map[list(self.action_map.keys())[0]]) == 0:
             input("HHHHHH")
 
