@@ -1,7 +1,6 @@
 from typing import Any
 import sys
 import os
-import csv
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from game_logic.player import Player
 from game_logic.card import Card

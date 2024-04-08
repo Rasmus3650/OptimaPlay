@@ -19,24 +19,34 @@ class Action():
 pygame.init()
 
 font = pygame.font.Font('freesansbold.ttf', 32)
+underline_font = pygame.font.Font('freesansbold.ttf', 32)
+underline_font.set_underline(True)
 small_font = pygame.font.Font('freesansbold.ttf', 16)
-player_positions = {0: (770, 60), 1: (1380, 115), 2: (1460, 690), 3: (770, 765), 4: (90, 690), 5: (160, 115)}
+player_positions = {0: (770, 55), 1: (1380, 110), 2: (1460, 685), 3: (770, 760), 4: (90, 685), 5: (160, 110)}
 card_positions = {0: (720, 190), 1: (1180, 240), 2: (1180, 560), 3: (720, 610), 4: (260, 560), 5: (260, 240)}
 card_x_offset = 80
 dealer_brick_positions = {0: (670, 190), 1: (1200, 200), 2: (1350, 560), 3: (885, 615), 4: (215, 570), 5: (215, 270)}
-
+action_text_pos = {0: (745, 20), 1: (1355, 80), 2: (1440, 655), 3: (740, 880), 4: (60, 655), 5: (125, 80)}
+player_bet_amount = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+player_bet_positions = {0: (790, 315), 1: (1165, 355), 2: (1165, 540), 3: (790, 590), 4: (410, 540), 5: (410, 355)}
+pot_pos = (700, 365)
+game_number_pos = (300, 50)
+folded_players = {0: False, 1: False, 2: False, 3: False, 4: False, 5: False}
 #fps = 60
-fps = 1
+fps = 3
 fpsClock = pygame.time.Clock()
 
 width, height = 1600, 900
 screen = pygame.display.set_mode((width, height))
 
 
-def get_init_bals(game_folder_path):
-    init_bals_csv = open(os.path.join(game_folder_path, "InitBals.csv"))
-    players = init_bals_csv.readline().replace("\n", "").replace(" ", "").replace("P", "").split(",")
-    bals = init_bals_csv.readline().replace("\n", "").replace(" ", "").split(",")
+def get_bals(game_folder_path, init=True):
+    if init:
+        bals_csv = open(os.path.join(game_folder_path, "InitBals.csv"))
+    else:
+        bals_csv = open(os.path.join(game_folder_path, "PostgameBals.csv"))
+    players = bals_csv.readline().replace("\n", "").replace(" ", "").replace("P", "").split(",")
+    bals = bals_csv.readline().replace("\n", "").replace(" ", "").split(",")
     player_dict = {int(k):float(v) for k, v in zip(players, bals)}
     return player_dict
 
@@ -47,10 +57,10 @@ def place_players(screen, player_bal_dict, curr_player = None):
     for player_id in list(player_bal_dict.keys()):
         if player_id not in list(player_positions.keys()): break
         if curr_player is not None and player_id == curr_player:
-            screen.blit(font.render(f"P {player_id}", True, green), player_positions[player_id])
+            screen.blit(underline_font.render(f"P {player_id}", True, green), player_positions[player_id])
         else:
-            screen.blit(font.render(f"P {player_id}", True, white), player_positions[player_id])
-        screen.blit(small_font.render(str(player_bal_dict[player_id]) + " $", True, white), (player_positions[player_id][0], player_positions[player_id][1] + 30))
+            screen.blit(underline_font.render(f"P {player_id}", True, white), player_positions[player_id])
+        screen.blit(small_font.render(str(player_bal_dict[player_id]) + " $", True, white), (player_positions[player_id][0], player_positions[player_id][1] + 40))
 
 def get_cards(game_folder_path):
     cards_csv = open(os.path.join(game_folder_path, "Cards.csv"))
@@ -153,52 +163,133 @@ def get_actions(game_folder_path):
                 line_count += 1
     return actions
 
+def place_action_text(screen, player_id, text):
+    screen.blit(small_font.render(f"{text}", True, (255, 255, 255)), action_text_pos[player_id])
 
+def place_bet_amount(screen, player_bet_amount):
+    for p_id in list(player_bet_amount.keys()):
+        screen.blit(small_font.render(f"{player_bet_amount[p_id]} $", True, (255, 255, 255)), player_bet_positions[p_id])
+
+def place_pot(screen, pot_amount):
+    screen.blit(font.render(f"Pot: {pot_amount} $", True, (255, 255, 255)), pot_pos)
+
+def place_cross(screen, folded_players, cross):
+    for p_id in list(folded_players.keys()):
+        if folded_players[p_id]:
+            screen.blit(cross, card_positions[p_id])
+
+def place_game_number(screen, game_n):
+    screen.blit(font.render(f"Game: {game_n}", True, (255, 255, 255)), game_number_pos)
  
 bg = pygame.image.load("assets/Poker_table.png")
 dealer_brick = pygame.image.load("assets/Dealer_brick.png")
+cross = pygame.image.load("assets/cross.png")
 table_folder = filedialog.askdirectory(initialdir=str(Path(os.getcwd()).parent.absolute()) + "/recorded_tables", title="Select a table-folder")
-curr_game = 0
+curr_game = 1
 game_folder = os.path.join(table_folder, f"Game_{curr_game}")
-player_bals = get_init_bals(game_folder)
+player_bals = get_bals(game_folder, init=True)
 player_cards, table_cards = get_cards(game_folder)
 player_cards, table_cards = load_cards(player_cards, table_cards)
+print(player_cards, table_cards)
 dealer = get_dealer(game_folder)
 actions = get_actions(game_folder)
 state = "Pre-flop"
 state_map = {0: "Pre-flop", 1: "Flop", 2: "Turn", 3: "River"}
 rev_state_map = {v: k for k, v in state_map.items()}
-
+pot_amount = 0
 current_action = 0
+newgame = False
+
+start_counter = 5
 
 # Game loop.
 while True:
+
+    if newgame:
+        newgame = False
+        post_bals = get_bals(game_folder, init=False)
+        for p_id in list(post_bals.keys()):
+            player_bals[p_id] = post_bals[p_id]
+        for p_id in list(folded_players.keys()):
+            folded_players[p_id] = False
+        curr_game += 1
+        if os.path.exists(os.path.join(table_folder, f"Game_{curr_game}")):
+            game_folder = os.path.join(table_folder, f"Game_{curr_game}")
+        else:
+            break
+
+        check_player_bals = get_bals(game_folder, init=True)
+        for p_id in list(player_bals.keys()):
+            if player_bals[p_id] != check_player_bals[p_id]:
+                print(f"PLAYER {p_id} BALANCE WAS {player_bals[p_id]} AFTER GAME {curr_game - 1} BUT WAS {check_player_bals[p_id]} BEFORE GAME {curr_game}????")
+        
+        player_cards, table_cards = get_cards(game_folder)
+        player_cards, table_cards = load_cards(player_cards, table_cards)
+        dealer = get_dealer(game_folder)
+        actions = get_actions(game_folder)
+        state = "Pre-flop"
+        pot_amount = 0
+        current_action = 0
+        start_counter = 5
+    
     screen.fill((0, 0, 0))
     screen.blit(bg, (0, 50))
+
+    place_game_number(screen, curr_game)
 
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
             sys.exit()
+        if event.type == pygame.MOUSEBUTTONUP:
+            pos = pygame.mouse.get_pos()
+            print(pos)
 
     
     place_player_cards(screen, player_cards)
     place_dealer_brick(screen, dealer, dealer_brick)
 
+    #print(actions)
+    #print(state)
+    #print(current_action)
     if len(actions[state]) > current_action:
         action_to_perform = actions[state][current_action]
         print(action_to_perform)
 
-    place_players(screen, player_bals, curr_player=action_to_perform.player_id)
-
-
+    
     # Do the action
+    if start_counter > 0:
+        start_counter -= 1
+    else:
+        current_action += 1
+        ac_str = f"{action_to_perform.action_str}"
+        if action_to_perform.action_str == "Call" or action_to_perform.action_str == "Raise":
+            ac_str += f" {action_to_perform.amount} $"
+            player_bals[action_to_perform.player_id] = round(player_bals[action_to_perform.player_id] - action_to_perform.amount, 2)
+            player_bet_amount[action_to_perform.player_id] = round(player_bet_amount[action_to_perform.player_id] + action_to_perform.amount, 2)
 
-    current_action += 1
+        if action_to_perform.action_str == "Fold":
+            folded_players[action_to_perform.player_id] = True
+
+        place_cross(screen, folded_players, cross)
+
+        place_action_text(screen, action_to_perform.player_id, ac_str)
+
     if current_action == len(actions[state]) and state != "River":
+        for p_id in list(player_bet_amount.keys()):
+            pot_amount += player_bet_amount[p_id]
+            player_bet_amount[p_id] = 0
         state = state_map[rev_state_map[state] + 1]
+        if len(actions[state]) == 0:
+            newgame = True
     elif current_action == len(actions[state]) and state == "River":
         break
-  
+
+    place_players(screen, player_bals, curr_player=action_to_perform.player_id)
+    place_bet_amount(screen, player_bet_amount)
+    place_pot(screen, pot_amount)
+
+
+
     pygame.display.flip()
     fpsClock.tick(fps)
