@@ -419,6 +419,7 @@ class Game():
         csv_file.close()
 
         cards_str = f""
+
         for p_id in list(self.player_list.keys()):
             cards_str += f"P {p_id}: {self.player_list[p_id].hand}\n"
         cards_str += f"\n{self.cards_on_table}\n"

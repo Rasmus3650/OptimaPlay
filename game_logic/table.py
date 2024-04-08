@@ -52,9 +52,7 @@ class Table():
         while not self.current_game.game_ended:
             action = self.current_game.player_performed_action()
         
-        if self.save_table:
-            save_path = self.get_game_folder(self.get_table_folder(), self.current_game.game_id)
-            self.current_game.record_game(save_path)
+        
         
         self.deck.reset_deck()
             
@@ -80,6 +78,9 @@ class Table():
 
 
     def end_game(self):
+        if self.save_table:
+            save_path = self.get_game_folder(self.get_table_folder(), self.current_game.game_id)
+            self.current_game.record_game(save_path)
         self.game_history.append(self.current_game)
         self.update_players()
 
