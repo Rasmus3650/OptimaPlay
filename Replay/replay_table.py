@@ -207,7 +207,7 @@ class Visualizer():
         self.screen.blit(winner_imgs[img_id], (self.player_positions[winner_id][0] - 45, self.player_positions[winner_id][1] - 45))
     
     def place_table_card(self, cards_on_table, table_cards_imgs):
-        print(cards_on_table)
+        #print(cards_on_table)
         for i in range(cards_on_table):
             self.screen.blit(table_cards_imgs[i][3], self.table_cards_positions[i])
         
@@ -290,7 +290,7 @@ class Visualizer():
                 current_action = 0
                 start_counter = 5
             
-            if dealing:
+            if dealing and newgame_counter < 0:
                 if cards_on_table < cards_amount[state]:
                     cards_on_table += 1
                 else:

@@ -267,6 +267,8 @@ class Game():
             #self.do_one_round()
         
         if new_state == "Showdown":
+           print(f"Currently on table: {self.cards_on_table}")
+           self.deal_table(5 - len(self.cards_on_table))
            new_state = "Conclusion" 
             
         if new_state == "Conclusion":

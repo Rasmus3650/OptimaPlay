@@ -63,11 +63,11 @@ def start_training(verbose=False):
 
 
 def main():
-    #train_thread = threading.Thread(target=start_training)
-    #train_thread.start()
+    train_thread = threading.Thread(target=start_training, args=(False,))
+    train_thread.start()
     print("Web Server Started")
-    app.run()
-    #train_thread.join()
+    #app.run()
+    train_thread.join()
     
 
 if __name__ == "__main__":
