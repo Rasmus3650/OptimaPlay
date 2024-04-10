@@ -5,7 +5,6 @@ from pygame.locals import *
 from pathlib import Path
 import re
 
-
 class Action():
     def __init__(self, player_id, action_str, amount) -> None:
         self.player_id = player_id
@@ -319,12 +318,6 @@ while True:
 
     place_paused(screen, paused)
         
-
-    #print(current_action)
-    #print(state)
-    #print(actions[state])
-    #print(action_to_perform)
-    #print()
     if current_action == len(actions[state]) and state != "River":
         for p_id in list(player_bet_amount.keys()):
             pot_amount = round(pot_amount + player_bet_amount[p_id], 2)
