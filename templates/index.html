@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collapsible Tables</title>
+    <style>
+        .collapsible {
+            background-color: #777;
+            color: white;
+            cursor: pointer;
+            padding: 18px;
+            width: 100%; 
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 15px;
+            margin-bottom: 5px; 
+        }
+
+        .active, .collapsible:hover {
+            background-color: #555;
+        }
+
+        .content {
+            display: none; /* Hide content initially */
+            overflow: hidden;
+            background-color: #f1f1f1;
+        }
+
+        /* Adjust table width to match the button */
+        .content table {
+            width: 100%; /* Adjust width as needed */
+        }
+        
+        /* Align table content to the left */
+        .content table td {
+            text-align: left;
+        }
+
+        /* Align table content to the left even when display is none */
+        .always-left td {
+            text-align: left;
+        }
+
+        .tables {
+            width: 7%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+<div class="tables">
+{% for table in tables %}
+    <button class="collapsible" onclick="toggleTable('{{ table }}')">{{ table }}</button>
+    <div class="content" id="{{ table }}">
+        <!-- Your table content here -->
+        <table class="always-left"> <!-- Added the class "always-left" to the table -->
+            <!-- Table rows and columns -->
+            {% for game in games[table] %}
+            <tr>
+                <td>{{ game }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+{% endfor %}
+</div>
+
+<script>
+    function toggleTable(table) {
+        var content = document.getElementById(table);
+        content.style.display = content.style.display === "block" ? "none" : "block";
+    }
+</script>
+
+</body>
+</html>

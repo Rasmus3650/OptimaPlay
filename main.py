@@ -1,7 +1,7 @@
 #from Input.visual import Visual_input
 import cv2
 import numpy as np
-import time
+import time, os
 from PIL import ImageGrab
 from Input.training import Training
 from flask import *
@@ -33,30 +33,31 @@ from game_logic.hand_evaluator import Hand_Evaluator
 
 app = Flask(__name__)
 
-def hello():
-    return 'you suck'
+@app.route('/')
+def index():
+    tables = sorted(list(os.walk("recorded_tables"))[0][1], key=lambda x: int(x.split('_')[1]))
+    games_dict = {}
+    for table in tables:
+        games = sorted(list(os.walk(os.path.join("recorded_tables", table)))[0][1], key=lambda x: int(x.split('_')[1]))
+        games_dict[table] = games
+    return render_template("index.html", tables=tables, games=games_dict)
 
-def run_flask():
-    app.run()
-
-def main():
-    flask_thread = threading.Thread(target=run_flask)
-    flask_thread.start()
-    print("Web Server Started")
+def start_training():
     start_time = time.time()
     number_of_tables=1
     training_obj = Training(number_of_tables)
     end_time = time.time()
     run_time = end_time - start_time
     print(f"Total time: {run_time}\nAvg. Time Per Table: {run_time / number_of_tables}")
-    #p_hands = [[Card(2, "Hearts"), Card(3, "Spades")], [Card(9, "Clubs"), Card(9, "Diamonds")], [Card(2, "Clubs"), Card(8, "Diamonds")], [Card(11, "Hearts"), Card(10, "Clubs")], [Card(7, "Diamonds"), Card(14, "Diamonds")], [Card(7, "Hearts"), Card(10, "Spades")]]
-    #cards_on_table = [Card(5, "Hearts"), Card(9, "Hearts"), Card(7, "Spades"), Card(14, "Clubs"), Card(4, "Diamonds")]
-    #hand_eval = Hand_Evaluator()
 
-    #print(hand_eval.compute_hand(p_hands[0], cards_on_table))
-    #for p_id in range(len(p_hands)):
-    #    res = hand_eval.compute_hand(p_hands[p_id], cards_on_table)
-    #    print(f"P {p_id}: {res}")
+
+def main():
+    #train_thread = threading.Thread(target=start_training)
+    #train_thread.start()
+    print("Web Server Started")
+    app.run()
+    #train_thread.join()
+    
 
 if __name__ == "__main__":
     main()
