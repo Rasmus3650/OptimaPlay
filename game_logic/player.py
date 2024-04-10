@@ -55,13 +55,16 @@ class Player():
             print(f"    Bal before: {self.balance} $")
             
             
-            self.current_money_on_table += needed
-            action_to_append.bet_amount = needed
+            
 
             if self.balance <= needed:
+                self.current_money_on_table += self.balance
+                action_to_append.bet_amount = self.balance
                 self.balance = 0.0
                 self.all_in = True
             else:
+                self.current_money_on_table += needed
+                action_to_append.bet_amount = needed
                 self.balance = round(self.balance - needed, 2)
 
             print(f"    Bal after: {self.balance} $")

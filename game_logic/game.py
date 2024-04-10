@@ -1,7 +1,6 @@
 from typing import Any
 import sys
 import os
-import csv
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from game_logic.player import Player
 from game_logic.card import Card
@@ -420,6 +419,7 @@ class Game():
         csv_file.close()
 
         cards_str = f""
+
         for p_id in list(self.player_list.keys()):
             cards_str += f"P {p_id}: {self.player_list[p_id].hand}\n"
         cards_str += f"\n{self.cards_on_table}\n"
