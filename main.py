@@ -4,7 +4,8 @@ import numpy as np
 import time
 from PIL import ImageGrab
 from Input.training import Training
-
+from flask import *
+import threading
 from game_logic.card import Card
 from game_logic.hand_evaluator import Hand_Evaluator
 
@@ -30,8 +31,18 @@ from game_logic.hand_evaluator import Hand_Evaluator
     
 #     #vis.get_cards_on_table("River", image, side=0)
 
+app = Flask(__name__)
+
+def hello():
+    return 'you suck'
+
+def run_flask():
+    app.run()
 
 def main():
+    flask_thread = threading.Thread(target=run_flask)
+    flask_thread.start()
+    print("Web Server Started")
     start_time = time.time()
     number_of_tables=1
     training_obj = Training(number_of_tables)
