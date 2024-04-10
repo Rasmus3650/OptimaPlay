@@ -6,6 +6,7 @@ from PIL import ImageGrab
 from Input.training import Training
 from flask import *
 import threading
+import sys
 from game_logic.card import Card
 from game_logic.hand_evaluator import Hand_Evaluator
 
@@ -30,6 +31,13 @@ from game_logic.hand_evaluator import Hand_Evaluator
     
     
 #     #vis.get_cards_on_table("River", image, side=0)
+class DummyFile(object):
+    def write(self, x):
+        pass
+
+    def flush(self):
+        pass
+
 
 app = Flask(__name__)
 
@@ -42,7 +50,10 @@ def index():
         games_dict[table] = games
     return render_template("index.html", tables=tables, games=games_dict)
 
-def start_training():
+def start_training(verbose=False):
+    if not verbose:
+        sys.stdout = DummyFile()
+        sys.stderr = DummyFile()
     start_time = time.time()
     number_of_tables=1
     training_obj = Training(number_of_tables)
