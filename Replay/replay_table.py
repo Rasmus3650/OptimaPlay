@@ -364,17 +364,20 @@ class Visualizer():
 
     def replay_table(self, table_folder):
         games = sorted(list(os.walk(table_folder))[0][1], key=lambda x: int(x.split('_')[1]))
-        for game in games:
-            
+        for game in games:            
             game_folder = os.path.join(table_folder, game)
             self.replay_game(game_folder, int(game.split("_")[1]))
 
         
+        
+
+
+
 
 
 obj = Visualizer(fps=1)
-#obj.replay_table("C:/Users/rune2/Documents/OptimaPlay_All/OptimaPlay/recorded_tables/table_1")
-obj.replay_game("C:/Users/rune2/Documents/OptimaPlay_All/OptimaPlay/recorded_tables/table_1/Game_18", 18)
+obj.replay_table("C:/Users/rune2/Documents/OptimaPlay_All/OptimaPlay/recorded_tables/table_1")
+#obj.replay_game("C:/Users/rune2/Documents/OptimaPlay_All/OptimaPlay/recorded_tables/table_1/Game_18", 18)
 #table_folder = filedialog.askdirectory(initialdir=str(Path(os.getcwd()).parent.absolute()) + "/recorded_tables", title="Select a table-folder")
 #curr_game = 0
 #game_folder = os.path.join(table_folder, f"Game_{curr_game}")
