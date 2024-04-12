@@ -5,8 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Canvas Animation</title>
     <style>
+        body {
+            background-color: #333;
+            color: #eee;
+            font-family: Arial, sans-serif;
+        }
+
         canvas {
-            border: 1px solid black;
+            border: 1px solid #eee;
+        }
+
+        button {
+            background-color: #555;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #444;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 200px; /* Adjust width as needed */
+            height: 5px; /* Adjust height as needed */
+            background-color: #555;
+            border-radius: 5px;
+            outline: none;
+            margin-top: 10px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px; /* Adjust thumb width */
+            height: 20px; /* Adjust thumb height */
+            background-color: #fff;
+            border-radius: 50%;
+            border: 2px solid #555;
+            cursor: pointer;
+            margin-top: -8px; /* Adjust thumb position */
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background-color: #ddd;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:active {
+            background-color: #bbb;
+        }
+
+        #fpsValue {
+            color: #fff;
+            font-size: 16px;
+            margin-left: 10px;
         }
     </style>
     <script src="{{ url_for('static', filename='game_animator.js') }}", type="text/javascript"></script>

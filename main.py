@@ -83,6 +83,8 @@ def train():
     train_thread.join()
 
 def main():
+    #for _ in range(3):
+    #    train()
     print("Web Server Started")
     app.run()
 
