@@ -53,6 +53,16 @@
             width: 7%;
             height: 100%;
         }
+
+        /* Hover effect for game elements */
+        .game {
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .game:hover {
+            background-color: #777;
+        }
     </style>
     <script src="{{ url_for('static', filename='index_script.js') }}", type="text/javascript"></script>
 </head>
