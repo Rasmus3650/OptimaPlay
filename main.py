@@ -9,7 +9,8 @@ import threading
 import sys
 from game_logic.card import Card
 from game_logic.hand_evaluator import Hand_Evaluator
-
+import plotly
+import plotly.graph_objs as go
 # def main2():
 #     vis = Visual_input()
 #     image = cv2.imread("./assets/img1.jpg")
@@ -51,6 +52,23 @@ def index():
     return render_template("index.html", tables=tables, games=games_dict)
 
 
+def get_postgame_bals(table, game):
+    bal_str = ""
+    game_folder = os.path.join(os.path.join(os.path.join(os.getcwd(), "recorded_tables"), f"{table}"), f"{game}")
+    file_path = os.path.join(game_folder, "PostgameBals.csv")
+    if os.path.exists(file_path):
+        with open(file_path, 'r') as f:
+            bal_str = f.read()
+    bal_dict = {}
+    players, bals = bal_str.split("\n")
+    players = players.split(", ")
+    bals = bals.split(", ")
+    for i in range(len(players)):
+        p_id = int(players[i][-1])
+        bal_dict[p_id] = float(bals[i])
+    #print(bal_dict)
+    return bal_dict
+
 @app.route('/replay/<table>/<game>')
 def get_file(table, game, redirect=False):
     redirect_param = request.args.get('redirect')
@@ -63,10 +81,43 @@ def get_file(table, game, redirect=False):
             file_path = os.path.join(root, file)
             with open(file_path, 'r') as f:
                 content = f.read()
-                
             json_data.append(content)
     fps = request.args.get('fps', default=2, type=int)
-    return render_template('replay_game.html', filenames=png_file_names, game_data=json_data, redirect=redirect, fps=fps)
+
+    # ----- NEDENUNDER ER TIL AT PLOTTE PLAYER BAL HENOVER TID
+
+    bal_history = []
+    for i in range(int(game.split("_")[1])):
+        bal_history.append(get_postgame_bals(table, f"Game_{i}"))
+    bal_data = []
+
+    for player_id in range(0,6):
+        y_arr = []
+        for game, balances in enumerate(bal_history):
+            balance = balances.get(player_id, None)
+            if balance is not None:
+                y_arr.append(balance)
+            else:
+                y_arr.append(0)  # or any default value you prefer
+            
+        trace = go.Scatter(
+            x=list(range(len(bal_history))),
+            y=y_arr,
+            mode='lines+markers',
+            name=f'Player {player_id}'
+        )
+        bal_data.append(trace)
+
+
+    layout = go.Layout(
+        title='Player Balances Over Time',
+        xaxis=dict(title='Game Index'),
+        yaxis=dict(title='Balance')
+    )
+    fig = go.Figure(data=bal_data, layout=layout)
+
+    plot_json = json.dumps(fig.to_dict())
+    return render_template('replay_game.html', plot_json=plot_json,filenames=png_file_names, game_data=json_data, redirect=redirect, fps=fps)
 
 
 def start_training(verbose=False):

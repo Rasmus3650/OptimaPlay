@@ -81,6 +81,7 @@
     <div id="canvas-container">
         <canvas id="myCanvas" width="1600" height="900"></canvas>
         <div style="margin-left: 20px;">
+            <div id="plot"></div>
             <button id="toggle_game" onclick="pauseResume()">PAUSE GAME</button>
             <input type="range" min="1" max="60" value="{{fps}}" id="fpsSlider">
             <span id="fpsValue">{{fps}}</span>
@@ -94,6 +95,13 @@
         <p id="game_data">{{game_data}}</p>
         <p id="redirect">{{redirect}}</p>
     </div>
-    
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script>
+        function displayPlot(plotData) {
+            Plotly.newPlot('plot', plotData.data, plotData.layout);
+        }
+        var plotJson = {{ plot_json|safe }};
+        displayPlot(plotJson)
+    </script>
 </body>
 </html>
