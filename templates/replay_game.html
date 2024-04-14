@@ -82,8 +82,8 @@
         <canvas id="myCanvas" width="1600" height="900"></canvas>
         <div style="margin-left: 20px;">
             <button id="toggle_game" onclick="pauseResume()">PAUSE GAME</button>
-            <input type="range" min="1" max="60" value="2" id="fpsSlider">
-            <span id="fpsValue">2</span>
+            <input type="range" min="1" max="60" value="{{fps}}" id="fpsSlider">
+            <span id="fpsValue">{{fps}}</span>
             <label for="fpsSlider">FPS</label>
         </div>
     </div>

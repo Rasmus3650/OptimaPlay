@@ -65,7 +65,8 @@ def get_file(table, game, redirect=False):
                 content = f.read()
                 
             json_data.append(content)
-    return render_template('replay_game.html', filenames=png_file_names, game_data=json_data, redirect=redirect)
+    fps = request.args.get('fps', default=2, type=int)
+    return render_template('replay_game.html', filenames=png_file_names, game_data=json_data, redirect=redirect, fps=fps)
 
 
 def start_training(verbose=False):
@@ -85,9 +86,9 @@ def train():
     train_thread.join()
 
 def main():
-    #for _ in range(3):
+    #for _ in range(5):
     #    train()
-    print("Web Server Started")
+    #print("Web Server Started")
     app.run()
 
     

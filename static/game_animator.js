@@ -20,6 +20,17 @@ window.onload = (event) => {
     fps=2;
     var fpsSlider = document.getElementById("fpsSlider");
     var fpsValueDisplay = document.getElementById("fpsValue");
+    let urlParams = new URLSearchParams(window.location.search);
+    
+    let fpsParam = urlParams.get('fps');
+    if (fpsParam !== null) {
+        fps = parseInt(fpsParam);
+        fpsSlider.value = fps;
+        fpsValueDisplay.textContent = fps;
+    }
+
+    
+
     fpsSlider.addEventListener('input', function(){
         fps = parseInt(this.value)
         fpsValueDisplay.textContent = this.value
@@ -139,6 +150,7 @@ function get_card_dict_and_table_cards(cards) {
 
 function get_bals_dict(bal_str) {
     bal_dict = {};
+    console.log(bal_str)
     var [players, bals] = bal_str.split("\\n");
     players = players.split(", ");
     bals = bals.split(", ");
@@ -183,7 +195,7 @@ function set_bals(bals_dict) {
 function get_redirect() {
     let url_params = new URLSearchParams(window.location.search);
     let redirect = url_params.get('redirect');
-    if (redirect === 'true') {
+    if (redirect === 'True') {
         return true;
     } else {
         return false;
@@ -387,7 +399,7 @@ function redirect_to_next_game(game){
     let last_idx = url.lastIndexOf("/");
     if (last_idx !== -1) {
         let baseUrl = url.substring(0, last_idx + 1); 
-        let result = baseUrl + "Game_" + game + "?redirect=true"
+        let result = baseUrl + "Game_" + game + "?redirect=True&fps="+fps;
         window.location.href = result;
     }
 }
