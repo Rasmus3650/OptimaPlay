@@ -52,7 +52,9 @@ def index():
 
 
 @app.route('/replay/<table>/<game>')
-def get_file(table, game):
+def get_file(table, game, redirect=False):
+    redirect_param = request.args.get('redirect')
+    redirect = True if redirect_param and redirect_param.lower() == 'true' else False
     png_file_names = [x for x in list(os.walk("static"))[0][2] if x[-2:] != "js"]
     game_folder = os.path.join(os.path.join(os.path.join(os.getcwd(), "recorded_tables"), f"{table}"), f"{game}")
     json_data = []
@@ -62,8 +64,8 @@ def get_file(table, game):
             with open(file_path, 'r') as f:
                 content = f.read()
                 
-            json_data.append(content.replace("\n", ""))
-    return render_template('replay_game.html', filenames=png_file_names, game_data=json_data)
+            json_data.append(content)
+    return render_template('replay_game.html', filenames=png_file_names, game_data=json_data, redirect=redirect)
 
 
 def start_training(verbose=False):

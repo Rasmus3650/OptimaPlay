@@ -121,7 +121,7 @@ function redirectToFirstGame(table) {
     var firstGameElement = document.querySelector('#' + table + ' .game');
     if (firstGameElement) {
         var game = firstGameElement.getAttribute('data-game');
-        var url = "{{ url_for('get_file', table='table_value', game='game_value') }}"
+        var url = "{{ url_for('get_file', table='table_value', game='game_value', redirect=True) }}"
             .replace('table_value', table)
             .replace('game_value', game);
         window.location.href = url;
