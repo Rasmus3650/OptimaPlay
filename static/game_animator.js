@@ -124,13 +124,14 @@ function get_action_dict(actions) {
 function get_card_dict_and_table_cards(cards) {
     var card_dict = {};
     var table_cards = [];
+    console.log(cards)
     cards = cards.split("\\n");
     for (var i = 0; i < cards.length; i++) {
         if (cards[i].length != 0 && cards[i].length < 70) {
             var id = cards[i][2];
             var card1 = cards[i].slice(cards[i].indexOf("d(") + 2, cards[i].indexOf("),")).split(",");
             var card2 = cards[i].slice(cards[i].indexOf("),") + 8, cards[i].length - 2).split(",");
-
+            
             card_dict[parseInt(id)] = [[parseInt(card1[0]), card1[1].slice(2, card1[1].length - 1)], [parseInt(card2[0]), card2[1].slice(2, card2[1].length - 1)]]
 
         } else if (cards[i].length >= 70) {
@@ -204,7 +205,14 @@ function get_redirect() {
 
 function load_data() {
     let data = document.getElementById("game_data").innerText;
-    [actions, cards, initbals, log, metadata, postgamebals, winners] = data.split("', '");
+    [actions, metadata, initbals, winners, cards, postgamebals, log] = data.split("', '");
+    console.log("ACTIONS: ", actions)
+    console.log("CARDS: ", cards)
+    console.log("INITBALS: ", initbals)
+    console.log("LOG: ", log)
+    console.log("METADATA: ", metadata)
+    console.log("POSTGAMEBALS: ", postgamebals)
+    console.log("WINNERS: ", winners)
     var action_dict = get_action_dict(actions);
     var [card_dict, table_cards] = get_card_dict_and_table_cards(cards);
     load_cards(card_dict, table_cards);
