@@ -26,6 +26,7 @@
 
         .first-game-button {
             margin-left: 5px; /* Add a margin between buttons */
+            width: 100%;
         }
 
         .active, .collapsible:hover {
@@ -81,7 +82,7 @@
 {% for table in tables %}
     <div class="button-container">
     <button class="collapsible" onclick="toggleTable('{{ table }}')">{{ table }}</button>
-    <button class="collapsible first-game-button" onclick="redirectToFirstGame('{{ table }}')">Go to First Game</button><!-- Giv en boolean med, for at den automatisk løber alle games i det table igennem-->
+    <button class="collapsible first-game-button" onclick="redirectToFirstGame('{{ table }}')">First Game</button>
     
 </div>
     <div class="content" id="{{ table }}">

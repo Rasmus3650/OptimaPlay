@@ -52,10 +52,13 @@ def index():
     return render_template("index.html", tables=tables, games=games_dict)
 
 
-def get_postgame_bals(table, game):
+def get_bals(table, game, initbals=False):
     bal_str = ""
     game_folder = os.path.join(os.path.join(os.path.join(os.getcwd(), "recorded_tables"), f"{table}"), f"{game}")
-    file_path = os.path.join(game_folder, "PostgameBals.csv")
+    if initbals:
+        file_path = os.path.join(game_folder, "InitBals.csv")
+    else:
+        file_path = os.path.join(game_folder, "PostgameBals.csv")
     if os.path.exists(file_path):
         with open(file_path, 'r') as f:
             bal_str = f.read()
@@ -70,25 +73,27 @@ def get_postgame_bals(table, game):
     return bal_dict
 
 @app.route('/replay/<table>/<game>')
-def get_file(table, game, redirect=False):
+def get_file(table, game):
     redirect_param = request.args.get('redirect')
-    redirect = True if redirect_param and redirect_param.lower() == 'true' else False
+    redirect_arg = True if redirect_param and redirect_param.lower() == 'true' else False
     png_file_names = [x for x in list(os.walk("static"))[0][2] if x[-2:] != "js"]
     game_folder = os.path.join(os.path.join(os.path.join(os.getcwd(), "recorded_tables"), f"{table}"), f"{game}")
+    if not os.path.exists(game_folder):
+        return redirect("/")
+    file_names = ["Actions.csv", "Cards.csv", "InitBals.csv", "log.txt", "metadata.txt", "PostgameBals.csv", "Winners.csv"]
     json_data = []
-    for root, dirs, files in os.walk(game_folder):
-        for file in files:
-            file_path = os.path.join(root, file)
-            with open(file_path, 'r') as f:
-                content = f.read()
-            json_data.append(content)
+    for file in file_names:
+        file_path = os.path.join(game_folder, file)
+        with open(file_path, 'r') as f:
+            content = f.read()
+        json_data.append(content)
     fps = request.args.get('fps', default=2, type=int)
 
     # ----- NEDENUNDER ER TIL AT PLOTTE PLAYER BAL HENOVER TID
-
-    bal_history = []
+ 
+    bal_history = [get_bals(table, f"Game_0", initbals=True)]
     for i in range(int(game.split("_")[1])):
-        bal_history.append(get_postgame_bals(table, f"Game_{i}"))
+        bal_history.append(get_bals(table, f"Game_{i}", initbals=False))
     bal_data = []
 
     for player_id in range(0,6):
@@ -117,7 +122,7 @@ def get_file(table, game, redirect=False):
     fig = go.Figure(data=bal_data, layout=layout)
 
     plot_json = json.dumps(fig.to_dict())
-    return render_template('replay_game.html', plot_json=plot_json,filenames=png_file_names, game_data=json_data, redirect=redirect, fps=fps)
+    return render_template('replay_game.html', plot_json=plot_json,filenames=png_file_names, game_data=json_data, redirect=redirect_arg, fps=fps)
 
 
 def start_training(verbose=False):
