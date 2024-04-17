@@ -104,6 +104,10 @@ window.onload = (event) => {
                    5: {"folded": false, "all-in": false, "bal": 0.0, "curr_bet": 0.0, "total_bet": 0.0}};
 
     let scaleParam = urlParams.get('scale');
+    if (scaleParam == null){
+        scaleParam = 50
+    }
+    globalscale = scaleParam
     load_data();
     change_scale(parseInt(scaleParam), firstcall = true);
     //start_animation(fps);
