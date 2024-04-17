@@ -26,24 +26,25 @@ class Player():
 
     def perform_action(self, somebody_raised, max_currently_on_table = 0):
         #print(f"PLAYER {self.player_id} ACTION")
-        if somebody_raised and self.balance < max_currently_on_table:
+        if somebody_raised and (self.balance + self.current_money_on_table) < max_currently_on_table:
             self.actions = [Player_Action(self.table, self.player_id, action) for action in ["Fold", "Call"]]
-        elif somebody_raised and self.balance >= max_currently_on_table:
+        elif somebody_raised and (self.balance + self.current_money_on_table) >= max_currently_on_table:
             self.actions = [Player_Action(self.table, self.player_id, action) for action in ["Fold", "Call", "Raise"]]
         else:
             self.actions =  [Player_Action(self.table, self.player_id, action) for action in ["Fold", "Check", "Raise"]]
 
-        action_to_append = self.strategy.compute_action(table=self.table, player_id=self.player_id)
-        
+        action_to_append = self.strategy.compute_action(table=self.table, player_id=self.player_id, max_currently_on_table=max_currently_on_table)
+        if max_currently_on_table == self.current_money_on_table and action_to_append.action_str == "Fold":
+            action_to_append.action_str = "Check"
+
         if action_to_append is None: return None
         if action_to_append.action_str == "Raise":
             print(f"Player {self.player_id} raised!!")
             print(f"    Bal before: {self.balance} $")
-            amount = self.strategy.compute_bet_amount(self.table, self.player_id, max_currently_on_table)
+            amount = action_to_append.bet_amount
             print(f"    amount: {amount}")
             self.current_money_on_table += amount
             self.balance = round(self.balance - amount, 2)
-            action_to_append.bet_amount = amount
             if self.balance < 0.01:
                 self.all_in = True
             print(f"    Bal after: {self.balance} $")

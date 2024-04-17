@@ -2,10 +2,10 @@ from typing import Any
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from game_logic.player import Player
-from game_logic.card import Card
+from .player import Player
+from .card import Card
 import numpy as np
-from game_logic.hand_evaluator import Hand_Evaluator
+from .hand_evaluator import Hand_Evaluator
 from functools import cmp_to_key
 from Input.statistics import PokerStatistics
 
@@ -124,6 +124,24 @@ class Game():
 
         #print(f"Found {res_player}")
         return res_player
+    
+    def get_trans_player(self, dealer):
+        p_ids = list(self.active_player_list.keys())
+        if dealer in p_ids:
+            return dealer
+        curr = dealer
+
+        counter = 0
+        while curr not in p_ids:
+            curr = (curr - 1) % (max(p_ids) + 1)
+            if counter >= len(list(self.player_list.keys())):
+                print(f"COULD NOT GET TRANSITION PLAYER")
+                print(f"DEALER: {dealer}")
+                print(f"ACTIVE PLAYERLIST: {list(self.active_player_list.keys())}")
+                input(f"[ERROR]...")
+            counter += 1
+            
+        return curr
 
 
     def create_side_pot(self, player_id, amount):
@@ -147,17 +165,17 @@ class Game():
 
     def player_performed_action(self):
         player_id = self.current_player
-        #print(f"PLAYER TO PERFORM ACTION: {player_id}")
+        print(f"PLAYER TO PERFORM ACTION: {player_id}")
         next_player = self.get_next_player(player_id)
         previous_player = self.get_next_player(player_id, reverse=True)
-        #print(f"Game state: {self.game_state}")
+        print(f"Game state: {self.game_state}")
         
         if self.game_state == "Showdown":
             return None
         
         max_currently_on_table = max([self.player_list[p_id].current_money_on_table for p_id in self.player_list])
-
         action = self.active_player_list[player_id].perform_action(self.somebody_raised, max_currently_on_table)
+        print(f"Action: {action}")
         if action is None:
             self.current_player = next_player
             return None
@@ -173,7 +191,9 @@ class Game():
             self.action_map[self.game_state].append(action)
         
         if action.action_str == "Raise" or action.action_str == "Call":
+            self.log_str += f"Max_currently_on_table: {max_currently_on_table}\n"
             if self.active_player_list[player_id].all_in:
+                self.log_str += f"Player {player_id} is ALL IN\n"
                 self.create_side_pot(player_id, action.bet_amount)
                 self.all_in_players.append(self.active_player_list.pop(player_id))
             else:
@@ -243,12 +263,12 @@ class Game():
         else:
             new_state = self.all_game_states[self.all_game_states.index(self.game_state) + 1 % len(self.all_game_states)]
         self.log_str += f"Game state transitioned from '{self.game_state}' to '{new_state}'\n"
-        print(f"Game state transitioned from '{self.game_state}' to '{new_state}'")
+        print(f"Game {self.game_id} state transitioned from '{self.game_state}' to '{new_state}'")
         self.game_state = new_state
 
         if new_state in ["Flop", "Turn", "River"]:
             self.current_player = self.get_player_after_dealer()
-            self.trans_player = self.dealer
+            self.trans_player = self.get_trans_player(self.dealer)
         player_list = []
         for _,player in self.active_player_list.items():
             player_list.append(player)
@@ -291,7 +311,7 @@ class Game():
                         is_not_all_in.append(winner)
 
                 for player in is_all_in:
-                    to_add = min(self.side_pots[player.player_id] / len(winner_group), self.pot)
+                    to_add = round(min(self.side_pots[player.player_id] / len(winner_group), self.pot), 2)
                     self.log_str += f"Adding {to_add} to player {player.player_id}\n"
                     print(f"Adding {to_add} to player {player.player_id}")
                     player.add_to_balance(to_add)
@@ -303,7 +323,7 @@ class Game():
                     break
 
                 for winner in is_not_all_in:
-                    to_add = min(self.pot / len(is_not_all_in), self.pot)
+                    to_add = round(min(self.pot / len(is_not_all_in), self.pot), 2)
                     self.log_str += f"Adding {to_add} to player {winner.player_id}\n"
                     print(f"Adding {to_add} to player {winner.player_id}")
                     winner.add_to_balance(to_add)
@@ -358,6 +378,7 @@ class Game():
     def game_over(self):
         self.game_ended = True
         self.stats.print_stats()
+        
         #input()
         self.return_function()
     
@@ -437,6 +458,10 @@ class Game():
         meta_file = open(os.path.join(game_folder, f"metadata.txt"), "w")
         meta_file.write(f"Dealer: {self.dealer}")
         meta_file.close()
+
+        for p_id in list(self.player_list.keys()):
+            if self.player_list[p_id].balance < 0:
+                input(f"WTF")
 
         
 

@@ -5,7 +5,7 @@ import os
 from Strategies.GTO_strategy import GTO_strategy
 
 class Table():
-    def __init__(self, start_balance: float, side: int, save_table = True, record_folder_path = "recorded_tables/", play_untill_1_winner = True) -> None:
+    def __init__(self, start_balance: float, side: int, save_table = True, record_folder_path = "Poker/recorded_tables/", play_untill_1_winner = True) -> None:
         self.game_history: list[Game] = []
         self.seated_players = {}
         self.start_balance = start_balance
@@ -52,7 +52,7 @@ class Table():
         while not self.current_game.game_ended:
             action = self.current_game.player_performed_action()
         
-        
+        #input(f"Game {self.current_game.game_id} ended...")
         
         self.deck.reset_deck()
             
@@ -92,10 +92,10 @@ class Table():
 
     def player_joined(self): 
         id = len(list(self.seated_players.keys()))
-        # if id == 0:
-        #     self.seated_players[id] = Player(id, len(self.seated_players) == 0, self.start_balance, table=self, strategy=GTO_strategy)
-        # else:
-        self.seated_players[id] = Player(id, len(self.seated_players) == 0, self.start_balance, table=self)
+        if id == 0:
+            self.seated_players[id] = Player(id, len(self.seated_players) == 0, self.start_balance, table=self, strategy=GTO_strategy)
+        else:
+            self.seated_players[id] = Player(id, len(self.seated_players) == 0, self.start_balance, table=self)
 
 
     def player_left(self, player_id):

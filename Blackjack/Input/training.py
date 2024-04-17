@@ -1,13 +1,13 @@
 
 import sys, os, random
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from game_logic.card import Card
-from game_logic.table import Table
-from game_logic.deck import Deck
-from game_logic.player import Player
-from game_logic.game import Game
+from Blackjack.game_logic.card import Card
+from Blackjack.game_logic.table import Table
+from Blackjack.game_logic.deck import Deck
+from Blackjack.game_logic.player import Player
+from Blackjack.game_logic.game import Game
 
-class Training():
+class BlackjackTraining():
     def __init__(self, number_of_tables: int = 1) -> None:
         self.table_list = {}
         for i in range(number_of_tables):

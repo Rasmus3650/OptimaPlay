@@ -14,6 +14,7 @@ class GTO_strategy(Strategy): #https://www.pokerprofessor.com/university/how-to-
         self.group_g = ["A2s", "A3s", "A4s", "A5s", "A6s", "A7s", "A8s", "A9s", "KTs", "QTs", "JTs", "J9s", "T9s", "98s"]
         self.group_h = ["KJ", "KT", "QJ", "J8s", "T8s", "87s", "76s"]
         self.groups = [self.group_a, self.group_b, self.group_c, self.group_d, self.group_e, self.group_f, self.group_g, self.group_h]
+        self.group_map = {0: "A", 1: "B", 2: "C", 3: "D", 4: "E", 5: "F", 6: "G", 7: "H"}
         
         self.rank_map = {10: "T", 11: "J", 12: "Q", 13: "K", 14: "A"}
 
@@ -96,6 +97,9 @@ class GTO_strategy(Strategy): #https://www.pokerprofessor.com/university/how-to-
         else:
             formated_hand_str_2 = formated_hand_str
         
+        print(f"str1, str2: {formated_hand_str} , {formated_hand_str_2}")
+        print(f"All groups: {self.groups}")
+
         for i, group in enumerate(self.groups):
             if formated_hand_str in group or formated_hand_str_2 in group:
                 res_group = i
@@ -146,26 +150,41 @@ class GTO_strategy(Strategy): #https://www.pokerprofessor.com/university/how-to-
             
 
 
-    def compute_action(self, table, player_id: int) -> Player_Action:
+    def compute_action(self, table, player_id: int, max_currently_on_table) -> Player_Action:
         if super().compute_action(table, player_id) == "NoAction": 
             return None
         player = self.get_player(table, player_id)
         group = self.get_hand_group(player)
+        if group == -1:
+            return Player_Action(table, player_id, "Fold", 0.0)
         situation = self.get_situation(table, player_id)
         position = self.get_position(table, player_id)
-
+        print(f"POS: {position}")
         actions = self.action_map[situation][position]
         res_action_str = None
         for action in list(actions.keys()):
-            if group in actions[action]:
+            if self.group_map[group] in actions[action]:
                 res_action_str = action
         
         if res_action_str == "Raise":
-            bet_amount = self.compute_bet_amount(table, position, player.balance)
+            bet_amount = self.compute_bet_amount(table, position, player.balance, max_currently_on_table - player.current_money_on_table)
         else:
-            bet_amount = 0.0
+            bet_amount = 0
 
         if res_action_str is None:
+            
+            print(f"Player:")
+            print(player)
+            print(f"Group:")
+            print(group)
+            print(f"Situation:")
+            print(situation)
+            print(f"Position:")
+            print(position)
+            print(f"Actions:")
+            print(actions)
+            input(f"The fuck???")
+            
             return None
 
         res_action = Player_Action(table, player_id, res_action_str, bet_amount)
@@ -175,7 +194,8 @@ class GTO_strategy(Strategy): #https://www.pokerprofessor.com/university/how-to-
         #print(table.seated_players[player_id].actions[1:-1])
         return res_action
 
-    def compute_bet_amount(self, table, position, bal):
+    def compute_bet_amount(self, table, position, bal, minimum):
+        print(f"POS2: {position}")
         bb = table.current_game.blinds_amount[1]
         res = 0
         if position == "Early":
@@ -184,5 +204,11 @@ class GTO_strategy(Strategy): #https://www.pokerprofessor.com/university/how-to-
             res = round(bb * 3.5, 2)
         if position == "Late":
             res = round(bb * 3, 2)
-        
-        return min(res, bal)
+        res += minimum
+        bet_amount = min(res, bal)
+        if bet_amount <= 0.01:
+            print(f"Position: {position}")
+            print(f"Bal: {bal}")
+            print(f"res: {res}")
+            input(f"THE FUCK")
+        return bet_amount
