@@ -11,5 +11,7 @@ class Random_strategy(Strategy):
         res = random.choice(table.seated_players[player_id].actions)
         return res
 
-    def compute_bet_amount(self):
-        pass
+    def compute_bet_amount(self, table, player_id):
+        minimum = 0
+        maximum = table.seated_players[player_id].balance
+        return round(random.uniform(minimum + 0.01, maximum), 2)

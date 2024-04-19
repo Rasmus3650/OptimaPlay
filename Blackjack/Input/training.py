@@ -11,7 +11,7 @@ class BlackjackTraining():
     def __init__(self, number_of_tables: int = 1) -> None:
         self.table_list = {}
         for i in range(number_of_tables):
-            self.table_list[i]=Table(random.randint(5,1000), i)
+            self.table_list[i]=Table(random.randint(5,1000))
         
         for table in list(self.table_list.keys()):
             for i in range(6):
