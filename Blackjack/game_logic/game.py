@@ -153,7 +153,6 @@ class Game():
         print(f"Dealer downcard: {self.dealer_downcard}")
 
     def record_game(self):
-        print(f"ALJKDNGFALKJSFN")
         max_len = -1
         header_str = f""
         for p_id in list(self.all_actions.keys()):
@@ -173,7 +172,7 @@ class Game():
                     ac_str += f"[{p_id};{self.all_actions[p_id][i].action_str};{self.all_actions[p_id][i].hand_id}], "
             ac_str = ac_str[:-2] + "\n"
             entire_ac_str += ac_str
-        print(self.game_folder)
+
         csv_file = open(os.path.join(self.game_folder, f"Actions.csv"), "w")
         csv_file.write(header_str)
         csv_file.write(entire_ac_str)
