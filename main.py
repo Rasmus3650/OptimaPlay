@@ -12,6 +12,9 @@ from Poker.game_logic.card import Card
 from Poker.game_logic.hand_evaluator import Hand_Evaluator
 import plotly
 import plotly.graph_objs as go
+import pstats
+import cProfile
+import snakeviz
 # def main2():
 #     vis = Visual_input()
 #     image = cv2.imread("./assets/img1.jpg")
@@ -176,7 +179,7 @@ def start_training(verbose=False):
         sys.stdout = DummyFile()
         sys.stderr = DummyFile()
     start_time = time.time()
-    number_of_tables=1
+    number_of_tables=10
     training_obj = PokerTraining(number_of_tables)
     end_time = time.time()
     run_time = end_time - start_time
@@ -203,8 +206,9 @@ def main():
     #    train()
     #print("Web Server Started")
     #app.run()
-    #start_training(verbose=True)
-    train_blackjack(verbose=True)
+    start_training(verbose=False)
+    #train_blackjack(verbose=True)
 
 if __name__ == "__main__":
-    main()
+    profile_results_file = "optimization_logs/profile_results.prof"
+    cProfile.run('main()', profile_results_file)
