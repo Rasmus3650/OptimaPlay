@@ -4,26 +4,6 @@ class PokerAgent():
         self.reward = 0
         self.table = None   # Setup the table for the agent
 
-
-    # Start the game
-    def start_game(self):
-        pass
-
-    def get_state(self):
-        # Get the game state and append to self.states
-        pass
-
-    def encode_state(self, encoding_scheme):
-        # Encode a game state, to be suitable as input for a NN, given an encoding scheme
-        pass
-
-    def update_reward(self):
-        # Update the reward depending on the reward_function passed along from the models object.
-        pass
-
-    def update_states(self, state):
-        self.states.append(state)
-
     def compute_action(self, state):
         """
         Compute the action based on the current state.
