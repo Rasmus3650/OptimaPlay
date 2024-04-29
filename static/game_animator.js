@@ -328,11 +328,16 @@ function load_data() {
     console.log("POSTGAMEBALS: ", postgamebals)
     console.log("WINNERS: ", winners)
     var action_dict = get_action_dict(actions);
+    console.log("PARSED ACTIONS: ", action_dict)
     var [card_dict, table_cards] = get_card_dict_and_table_cards(cards);
+    console.log("PARSED CARDS: ", card_dict)
+    
     load_cards(card_dict, table_cards);
     var initbals_dict = get_bals_dict(initbals);
+    console.log("PARSED INITBALS: ",initbals_dict )
     set_bals(initbals_dict);
     dealer = get_dealer(metadata);
+    console.log("PARSED DEALER: ", dealer)
     var postgamebals_dict = get_bals_dict(postgamebals);
     var winner_arr = get_winner(winners);
     

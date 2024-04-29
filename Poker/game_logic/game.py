@@ -1,6 +1,7 @@
 from typing import Any
 import sys
 import os
+import json
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from .player import Player
 from .card import Card
@@ -383,7 +384,38 @@ class Game():
         self.return_function()
     
     def record_game(self, game_folder):
+        
+        # New Game Recorder - create a single dictionary containing the data for all the files
+        # Each Key in game_data will contain the data for the corresponding file in the format game_animator.js needs
+        # This saves us from a lot of parsing in the js file
+        game_data = {}
 
+        # MISSING GAME_DATA!!!
+        game_data['actions'] = {}
+
+        # Fix the Card encoding
+        #game_data['cards'] = {'cards_on_table': self.cards_on_table, 'player_hands':{p_id: self.player_list[p_id].hand for p_id in list(self.player_list.keys())}}
+        game_data['cards'] = {}
+
+
+        game_data['init_bals'] = self.initial_balances
+        game_data['metadata'] = {'dealer': int(self.dealer)}
+
+        winners = []
+        for lvl in self.winner_arr:
+            level_winners = []  # Create an empty list for the current level
+            for winner in lvl:
+                level_winners.append(winner.player_id)  # Append each winner to the current level's list
+            winners.append(level_winners) 
+        game_data['winners'] = winners
+        game_data['log'] = {'log_str': self.log_str}
+        game_data['postgame_bals'] = {p_id: self.player_list[p_id].balance for p_id in list(self.player_list.keys())}
+
+        with open(os.path.join(game_folder, f"game_data.json"), "w") as json_file:
+            json.dump(game_data, json_file)
+
+
+        # OLD METHOD
         header_str = f""
 
         for key in list(self.action_map.keys()):

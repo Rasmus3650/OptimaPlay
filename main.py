@@ -206,7 +206,7 @@ def main():
     #    train()
     #print("Web Server Started")
     #app.run()
-    start_training(verbose=False)
+    start_training(verbose=True)
     #train_blackjack(verbose=True)
 
 if __name__ == "__main__":
