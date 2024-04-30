@@ -108,7 +108,7 @@
         {% for file in filenames %}
         <img src="{{ url_for('static', filename=file) }}" width="1600" height="900">
         {% endfor %}
-        <p id="game_data">{{game_data}}</p>
+        <p id="game_data">{{game_data | tojson | safe }}</p>
         <p id="redirect">{{redirect}}</p>
     </div>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>

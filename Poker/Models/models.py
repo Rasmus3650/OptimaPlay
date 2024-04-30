@@ -38,4 +38,4 @@ class RLModel():
         pass
 
     def spawn_agents(self, number_of_agents):
-        retu[PokerAgent() for _ in range(number_of_agents)]
+        return [PokerAgent() for _ in range(number_of_agents)]

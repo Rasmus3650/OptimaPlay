@@ -389,14 +389,24 @@ class Game():
         # Each Key in game_data will contain the data for the corresponding file in the format game_animator.js needs
         # This saves us from a lot of parsing in the js file
         game_data = {}
-
+        parsed_actions = {}
+        for stage, actions in self.action_map.items():
+            parsed_actions[stage] = []
+            for action in actions:
+                print(action)
+                parsed_actions[stage].append([action.player_id, action.action_str, action.bet_amount])
         # MISSING GAME_DATA!!!
-        game_data['actions'] = {}
+        game_data['actions'] = parsed_actions
 
-        # Fix the Card encoding
-        #game_data['cards'] = {'cards_on_table': self.cards_on_table, 'player_hands':{p_id: self.player_list[p_id].hand for p_id in list(self.player_list.keys())}}
-        game_data['cards'] = {}
+        cards_on_table = []
+        for card in self.cards_on_table:
+            cards_on_table.append([card.current_suit, card.current_rank])
 
+        player_hands = {}
+        for p_id in list(self.player_list.keys()):
+            for card in self.player_list[p_id].hand:
+                player_hands[p_id] = [card.current_suit, card.current_rank]
+        game_data['cards'] = {'cards_on_table': cards_on_table, 'player_hands':player_hands}
 
         game_data['init_bals'] = self.initial_balances
         game_data['metadata'] = {'dealer': int(self.dealer)}

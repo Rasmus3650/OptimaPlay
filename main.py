@@ -129,12 +129,15 @@ def get_file(table, game):
     if not os.path.exists(game_folder):
         return redirect("/")
     file_names = ["Actions.csv", "Cards.csv", "InitBals.csv", "log.txt", "metadata.txt", "PostgameBals.csv", "Winners.csv"]
-    json_data = []
-    for file in file_names:
-        file_path = os.path.join(game_folder, file)
-        with open(file_path, 'r') as f:
-            content = f.read()
-        json_data.append(content)
+    #json_data = []
+    #for file in file_names:
+    #    file_path = os.path.join(game_folder, file)
+    #    with open(file_path, 'r') as f:
+    #        content = f.read()
+    #    json_data.append(content)
+    json_data = {}
+    with open(os.path.join(game_folder, "game_data.json"), 'r') as f:
+        json_data = json.load(f)
     fps = request.args.get('fps', default=2, type=int)
 
     # ----- NEDENUNDER ER TIL AT PLOTTE PLAYER BAL HENOVER TID
@@ -170,7 +173,6 @@ def get_file(table, game):
     fig = go.Figure(data=bal_data, layout=layout)
 
     plot_json = json.dumps(fig.to_dict())
-    print(f"Sanity check")
     return render_template('replay_game.html', plot_json=plot_json,filenames=png_file_names, game_data=json_data, redirect=redirect_arg, fps=fps)
 
 
@@ -205,8 +207,8 @@ def main():
     #for _ in range(5):
     #    train()
     #print("Web Server Started")
-    #app.run()
-    start_training(verbose=True)
+    app.run()
+    #start_training(verbose=False)
     #train_blackjack(verbose=True)
 
 if __name__ == "__main__":

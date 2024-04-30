@@ -318,44 +318,13 @@ function get_redirect() {
 }
 
 function load_data() {
-    let data = document.getElementById("game_data").innerText;
-    [actions, cards, initbals, log, metadata, postgamebals, winners] = data.split("', '");
-    console.log("ACTIONS: ", actions)
-    console.log("CARDS: ", cards)
-    console.log("INITBALS: ", initbals)
-    console.log("LOG: ", log)
-    console.log("METADATA: ", metadata)
-    console.log("POSTGAMEBALS: ", postgamebals)
-    console.log("WINNERS: ", winners)
-    var action_dict = get_action_dict(actions);
-    console.log("PARSED ACTIONS: ", action_dict)
-    var [card_dict, table_cards] = get_card_dict_and_table_cards(cards);
-    console.log("PARSED CARDS: ", card_dict)
-    
-    load_cards(card_dict, table_cards);
-    var initbals_dict = get_bals_dict(initbals);
-    console.log("PARSED INITBALS: ",initbals_dict )
-    set_bals(initbals_dict);
-    dealer = get_dealer(metadata);
-    console.log("PARSED DEALER: ", dealer)
-    var postgamebals_dict = get_bals_dict(postgamebals);
-    var winner_arr = get_winner(winners);
-    
-    /*
-    print(action_dict, "Action dict");
-    print(card_dict, "Card dict");
-    print(table_cards, "Table cards");
-    print(initbals_dict, "Init bals");
-    print(dealer, "Dealer");
-    print(postgamebals_dict, "Postgame bals");
-    print(winner_arr, "Winners");
-    */
-   
-    create_action_list(action_dict);
-    console.log(action_list);
-    
-    
-
+    let data = document.getElementById("game_data").innerHTML.toString()
+    json_data = JSON.parse(data)
+    console.log(json_data)
+    create_action_list(json_data['actions']);
+    set_bals(json_data['init_bals'])
+    load_cards(json_data['cards']['player_hands'],json_data['cards']['cards_on_table'])
+    dealer = json_data['metadata']['dealer']
 }
 
 function animation_is_running() {
