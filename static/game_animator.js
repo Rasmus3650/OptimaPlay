@@ -110,7 +110,21 @@ window.onload = (event) => {
     globalscale = scaleParam
     load_data();
     change_scale(parseInt(scaleParam), firstcall = true);
-    //start_animation(fps);
+
+    let redirectParam = urlParams.get('redirect');
+
+    if (redirectParam == "True") {
+
+        let url = window.location.href;
+        var u_score_idx = url.lastIndexOf("_");
+        var q_mark_idx = url.lastIndexOf("?");
+        var game_number = parseInt(url.slice(u_score_idx + 1, q_mark_idx));
+        
+        if (game_number != 0) {
+            pauseResume(force_start=true);
+        }
+        
+    }
 };
 
 function change_scale(scale, firstcall = false) {
@@ -197,93 +211,6 @@ function start_animation(fps) {
     },1000/fps);
 }
 
-function get_action_dict(actions) {
-    actions = actions.split("\\n");
-    actions = actions.slice(0, actions.length - 1);
-    actions[0] = actions[0].slice(2);
-    for (var i = 0; i < actions.length; i++) {
-        if (actions[i].length > 0) {
-            actions[i] = actions[i].split(",");
-        }
-    }
-    var action_dict = {};
-    var done = false;
-    for (var i = 0; i < actions[0].length; i++) {
-        actions[0][i] = actions[0][i].trim();
-        action_dict[actions[0][i]] = [];
-        for (var j = 1; j < actions.length; j++) {
-            if (actions[j][i].length < 3) {
-                done = true;
-                break
-            }
-            actions[j][i] = actions[j][i].slice(1, actions[j][i].length - 1).split(";");
-            var p_id = parseInt(actions[j][i][0]);
-            var ac_str = actions[j][i][1];
-            var amount = parseFloat(actions[j][i][2]);
-            action_dict[actions[0][i]].push([p_id, ac_str, amount]);
-        }
-        if (done) {
-            break;
-        }
-    }
-    var keys = Object.keys(action_dict);
-    for (var i = 0; i < keys.length; i++) {
-        if (action_dict[keys[i]].length == 0) {
-            delete action_dict[keys[i]];
-        }
-    }
-    return action_dict;
-}
-
-function get_card_dict_and_table_cards(cards) {
-    var card_dict = {};
-    var table_cards = [];
-    console.log(cards)
-    cards = cards.split("\\n");
-    for (var i = 0; i < cards.length; i++) {
-        if (cards[i].length != 0 && cards[i].length < 70) {
-            var id = cards[i][2];
-            var card1 = cards[i].slice(cards[i].indexOf("d(") + 2, cards[i].indexOf("),")).split(",");
-            var card2 = cards[i].slice(cards[i].indexOf("),") + 8, cards[i].length - 2).split(",");
-            
-            card_dict[parseInt(id)] = [[parseInt(card1[0]), card1[1].slice(2, card1[1].length - 1)], [parseInt(card2[0]), card2[1].slice(2, card2[1].length - 1)]]
-
-        } else if (cards[i].length >= 70) {
-            for (var j = 0; j < 5; j++) {
-                var card = cards[i].slice(cards[i].indexOf("d(") + 2, cards[i].indexOf("),"));
-                if (j == 4) {
-                    card = card.slice(0, card.length - 1);
-                }
-                card = card.split(",");
-                table_cards.push([parseInt(card[0]), card[1].slice(2, card[1].length - 1)])
-                cards[i] = cards[i].slice(cards[i].indexOf("),") + 1);
-            }
-        }
-    }
-    return [card_dict, table_cards];
-}
-
-function get_bals_dict(bal_str) {
-    bal_dict = {};
-    console.log(bal_str)
-    var [players, bals] = bal_str.split("\\n");
-    players = players.split(", ");
-    bals = bals.split(", ");
-    for (var i = 0; i < players.length; i++) {
-        var p_id = parseInt(players[i].slice(players[i].length - 1));
-        bal_dict[p_id] = parseFloat(bals[i]);
-    }
-    return bal_dict;
-}
-
-function get_dealer(metadata) {
-    return parseInt(metadata.replace("Dealer: ", ""));
-}
-
-function get_winner(winners) {
-    return JSON.parse(winners.replace(/Player\s(\d+)/g, '$1').replace("']", ""));
-}
-
 function load_cards(card_dict, table_cards) {
     loaded_player_card_dict = {};
     loaded_table_cards_list = [];
@@ -357,7 +284,7 @@ function get_card_filename(card) {
         if (card[0] == 13) { rank_str = "king"; }
         if (card[0] == 14) { rank_str = "ace"; }
     }
-    var filename = rank_str + "_of_" + card[1].toLowerCase() + ".png";
+    var filename = rank_str + "_of_" + card[1].toString().toLowerCase() + ".png";
     return filename;
 }
 

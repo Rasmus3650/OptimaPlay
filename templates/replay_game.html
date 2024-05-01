@@ -111,13 +111,5 @@
         <p id="game_data">{{game_data | tojson | safe }}</p>
         <p id="redirect">{{redirect}}</p>
     </div>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <script>
-        function displayPlot(plotData) {
-            Plotly.newPlot('plot', plotData.data, plotData.layout);
-        }
-        var plotJson = {{ plot_json|safe }};
-        displayPlot(plotJson)
-    </script>
 </body>
 </html>

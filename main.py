@@ -100,25 +100,6 @@ def table_index(table):
 
     return render_template("table_index.html", table=table)
 
-def get_bals(table, game, initbals=False):
-    bal_str = ""
-    game_folder = os.path.join(os.path.join(os.path.join(os.getcwd(), "Poker/recorded_tables"), f"{table}"), f"{game}")
-    if initbals:
-        file_path = os.path.join(game_folder, "InitBals.csv")
-    else:
-        file_path = os.path.join(game_folder, "PostgameBals.csv")
-    if os.path.exists(file_path):
-        with open(file_path, 'r') as f:
-            bal_str = f.read()
-    bal_dict = {}
-    players, bals = bal_str.split("\n")
-    players = players.split(", ")
-    bals = bals.split(", ")
-    for i in range(len(players)):
-        p_id = int(players[i][-1])
-        bal_dict[p_id] = float(bals[i])
-    #print(bal_dict)
-    return bal_dict
 
 @app.route('/poker/<table>/replay/<game>')
 def get_file(table, game):
@@ -140,48 +121,15 @@ def get_file(table, game):
         json_data = json.load(f)
     fps = request.args.get('fps', default=2, type=int)
 
-    # ----- NEDENUNDER ER TIL AT PLOTTE PLAYER BAL HENOVER TID
- 
-    bal_history = [get_bals(table, f"Game_0", initbals=True)]
-    for i in range(int(game.split("_")[1])):
-        bal_history.append(get_bals(table, f"Game_{i}", initbals=False))
-    bal_data = []
-
-    for player_id in range(0,6):
-        y_arr = []
-        for game, balances in enumerate(bal_history):
-            balance = balances.get(player_id, None)
-            if balance is not None:
-                y_arr.append(balance)
-            else:
-                y_arr.append(0)  # or any default value you prefer
-            
-        trace = go.Scatter(
-            x=list(range(len(bal_history))),
-            y=y_arr,
-            mode='lines+markers',
-            name=f'Player {player_id}'
-        )
-        bal_data.append(trace)
+    return render_template('replay_game.html',filenames=png_file_names, game_data=json_data, redirect=redirect_arg, fps=fps)
 
 
-    layout = go.Layout(
-        title='Player Balances Over Time',
-        xaxis=dict(title='Game Index'),
-        yaxis=dict(title='Balance')
-    )
-    fig = go.Figure(data=bal_data, layout=layout)
-
-    plot_json = json.dumps(fig.to_dict())
-    return render_template('replay_game.html', plot_json=plot_json,filenames=png_file_names, game_data=json_data, redirect=redirect_arg, fps=fps)
-
-
-def start_training(verbose=False):
+def start_training(verbose=False, tables=1):
     if not verbose:
         sys.stdout = DummyFile()
         sys.stderr = DummyFile()
     start_time = time.time()
-    number_of_tables=10
+    number_of_tables=tables
     training_obj = PokerTraining(number_of_tables)
     end_time = time.time()
     run_time = end_time - start_time
@@ -207,8 +155,8 @@ def main():
     #for _ in range(5):
     #    train()
     #print("Web Server Started")
-    app.run()
-    #start_training(verbose=False)
+    #app.run()
+    start_training(verbose=False, tables=1)
     #train_blackjack(verbose=True)
 
 if __name__ == "__main__":

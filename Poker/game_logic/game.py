@@ -400,12 +400,13 @@ class Game():
 
         cards_on_table = []
         for card in self.cards_on_table:
-            cards_on_table.append([card.current_suit, card.current_rank])
+            cards_on_table.append([card.current_rank, card.current_suit])
 
         player_hands = {}
         for p_id in list(self.player_list.keys()):
+            player_hands[p_id] = []
             for card in self.player_list[p_id].hand:
-                player_hands[p_id] = [card.current_suit, card.current_rank]
+                 player_hands[p_id].append([card.current_rank, card.current_suit])
         game_data['cards'] = {'cards_on_table': cards_on_table, 'player_hands':player_hands}
 
         game_data['init_bals'] = self.initial_balances
@@ -423,98 +424,6 @@ class Game():
 
         with open(os.path.join(game_folder, f"game_data.json"), "w") as json_file:
             json.dump(game_data, json_file)
-
-
-        # OLD METHOD
-        header_str = f""
-
-        for key in list(self.action_map.keys()):
-            header_str += f"{key}, "
-        header_str = header_str[:-2] + "\n"
-        
-        csv_file = open(os.path.join(game_folder, f"Actions.csv"), "w")
-        csv_file.write(header_str)
-
-
-        for i in range(len(self.action_map[list(self.action_map.keys())[0]])):
-            line_str = f""
-            for key in list(self.action_map.keys()):
-                if len(self.action_map[key]) > i:
-                    action = self.action_map[key][i]
-                    line_str += f"[{action.player_id};{action.action_str};{action.bet_amount}],"
-                else:
-                    line_str += f"[],"
-            line_str = line_str[:-1] + "\n"
-            csv_file.write(line_str)
-        
-        csv_file.close()
-
-
-        header_str = f""
-        bal_str = f""
-        for p_id in list(self.initial_balances.keys()):
-            header_str += f"P {p_id}, "
-            bal_str += f"{self.initial_balances[p_id]}, "
-        header_str = header_str[:-2] + "\n"
-        bal_str = bal_str[:-2]
-
-        csv_file = open(os.path.join(game_folder, f"InitBals.csv"), "w")
-        csv_file.write(header_str)
-        csv_file.write(bal_str)
-
-        csv_file.close()
-
-        bal_after_str = f""
-        header_after_str = f""
-        for p_id in list(self.player_list.keys()):
-            header_after_str += f"P {p_id}, "
-            bal_after_str += f"{self.player_list[p_id].balance}, "
-        header_after_str = header_after_str[:-2] + "\n"
-        bal_after_str = bal_after_str[:-2]
-
-        csv_file = open(os.path.join(game_folder, f"PostgameBals.csv"), "w")
-        csv_file.write(header_after_str)
-        csv_file.write(bal_after_str)
-
-        csv_file.close()
-
-        csv_file = open(os.path.join(game_folder, f"Winners.csv"), "w")
-        csv_file.write(str(self.winner_arr))
-
-        csv_file.close()
-
-        cards_str = f""
-
-        for p_id in list(self.player_list.keys()):
-            cards_str += f"P {p_id}: {self.player_list[p_id].hand}\n"
-        cards_str += f"\n{self.cards_on_table}\n"
-        csv_file = open(os.path.join(game_folder, f"Cards.csv"), "w")
-        csv_file.write(cards_str)
-
-        csv_file.close()
-
-        log_file = open(os.path.join(game_folder, f"log.txt"), "w")
-        log_file.write(self.log_str)
-        log_file.close()
-
-        meta_file = open(os.path.join(game_folder, f"metadata.txt"), "w")
-        meta_file.write(f"Dealer: {self.dealer}")
-        meta_file.close()
-
-        for p_id in list(self.player_list.keys()):
-            if self.player_list[p_id].balance < 0:
-                input(f"WTF")
-
-        
-
-        if len(self.action_map[list(self.action_map.keys())[0]]) == 0:
-            input("HHHHHH")
-
-
-
-
-
-
 
     def __repr__(self) -> str:
         return_str = f"Game {self.game_id} (D: {self.dealer}, C: {self.current_player}, T: {self.trans_player})\n  Number of players: {len(self.player_list)}\n  Game State: {self.game_state}\n  Pot: {self.pot}\n  Pot Hist:\n"
