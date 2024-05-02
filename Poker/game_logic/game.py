@@ -12,7 +12,7 @@ from Input.statistics import PokerStatistics
 
 
 class Game():
-    def __init__(self, game_id, player_list: dict[int, Player], return_function, table, start_balance: int = None, save_game = False, blinds_amount = [0.01, 0.02]) -> None:
+    def __init__(self, game_id, player_list: dict[int, Player], return_function, table, start_balance: int = None, save_game = False, blinds_amount = [0.01, 0.02], consumer_thread = None) -> None:
         self.game_id = game_id
         self.player_list = player_list
         self.initial_balances = {}
@@ -46,7 +46,7 @@ class Game():
         self.stats = PokerStatistics(self.player_list)
         self.all_in_players = []
         self.log_str = f""
-
+        self.consumer_thread = consumer_thread
         self.transition_state()
         
     
@@ -422,8 +422,11 @@ class Game():
         game_data['log'] = {'log_str': self.log_str}
         game_data['postgame_bals'] = {p_id: self.player_list[p_id].balance for p_id in list(self.player_list.keys())}
 
-        with open(os.path.join(game_folder, f"game_data.json"), "w") as json_file:
-            json.dump(game_data, json_file)
+        if self.consumer_thread == None:
+            with open(os.path.join(game_folder, f"game_data.json"), "w") as json_file:
+                json.dump(game_data, json_file)
+        else:
+            self.consumer_thread.enqueue_data(game_data, game_folder)
 
     def __repr__(self) -> str:
         return_str = f"Game {self.game_id} (D: {self.dealer}, C: {self.current_player}, T: {self.trans_player})\n  Number of players: {len(self.player_list)}\n  Game State: {self.game_state}\n  Pot: {self.pot}\n  Pot Hist:\n"

@@ -5,6 +5,7 @@ import time, os
 from PIL import ImageGrab
 from Poker.Input.training import PokerTraining
 from Blackjack.Input.training import BlackjackTraining
+from auxiliary.ConsumerThread import ConsumerThread
 from flask import *
 import threading
 import sys
@@ -124,13 +125,13 @@ def get_file(table, game):
     return render_template('replay_game.html',filenames=png_file_names, game_data=json_data, redirect=redirect_arg, fps=fps)
 
 
-def start_training(verbose=False, tables=1):
+def start_training(verbose=False, tables=1, consumer_thread = None):
     if not verbose:
         sys.stdout = DummyFile()
         sys.stderr = DummyFile()
     start_time = time.time()
     number_of_tables=tables
-    training_obj = PokerTraining(number_of_tables)
+    training_obj = PokerTraining(number_of_tables, consumer_thread=consumer_thread)
     end_time = time.time()
     run_time = end_time - start_time
     print(f"Total time: {run_time}\nAvg. Time Per Table: {run_time / number_of_tables}")
@@ -156,9 +157,15 @@ def main():
     #    train()
     #print("Web Server Started")
     #app.run()
-    start_training(verbose=False, tables=1)
-    #train_blackjack(verbose=True)
 
+
+    #consumer_thread = ConsumerThread()
+    #consumer_thread.start()
+
+
+    start_training(verbose=False, tables=1, consumer_thread=None)
+    #train_blackjack(verbose=True)
+    #consumer_thread.join()
 if __name__ == "__main__":
     profile_results_file = "optimization_logs/profile_results.prof"
     cProfile.run('main()', profile_results_file)

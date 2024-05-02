@@ -8,10 +8,10 @@ from game_logic.player import Player
 from game_logic.game import Game
 
 class PokerTraining():
-    def __init__(self, number_of_tables: int = 1) -> None:
+    def __init__(self, number_of_tables: int = 1, consumer_thread = None) -> None:
         self.table_list = {}
         for i in range(number_of_tables):
-            self.table_list[i]=Table(random.randint(5,1000), i)
+            self.table_list[i]=Table(random.randint(5,1000), i, consumer_thread=consumer_thread)
         
         for table in list(self.table_list.keys()):
             for i in range(6):

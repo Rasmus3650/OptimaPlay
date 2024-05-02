@@ -5,11 +5,12 @@ import os
 from Strategies.GTO_strategy import GTO_strategy
 
 class Table():
-    def __init__(self, start_balance: float, side: int, save_table = True, record_folder_path = "Poker/recorded_tables/", play_untill_1_winner = True) -> None:
+    def __init__(self, start_balance: float, side: int, save_table = True, record_folder_path = "Poker/recorded_tables/", play_untill_1_winner = True, consumer_thread=None) -> None:
         self.game_history: list[Game] = []
         self.seated_players = {}
         self.start_balance = start_balance
         self.deck = Deck()
+        self.consumer_thread = consumer_thread
         self.current_game = None
         self.record_folder_path = record_folder_path
         self.play_untill_1_winner = play_untill_1_winner
@@ -48,7 +49,7 @@ class Table():
         return True
     
     def start_game(self):
-        self.current_game = Game(len(self.game_history), self.seated_players, return_function=self.end_game, table=self)
+        self.current_game = Game(len(self.game_history), self.seated_players, return_function=self.end_game, table=self, consumer_thread = self.consumer_thread)
         while not self.current_game.game_ended:
             action = self.current_game.player_performed_action()
         
