@@ -38,5 +38,4 @@ class ConsumerThread(threading.Thread):
             with open(path, 'w') as f:
                 json.dump(data, f)
         else:
-            # You can add alternative processing logic here
             pass
