@@ -47,16 +47,20 @@ class DummyFile(object):
 
 app = Flask(__name__)
 
-@app.context_processor
-def inject_data():
-    navbar_data = {"poker": {}, "blackjack": {}}
-
-    tables = sorted(list(os.walk("Poker/recorded_tables"))[0][1], key=lambda x: int(x.split('_')[1]))
+def get_games_dict(game_type):
+    tables = sorted(list(os.walk(f"{game_type}/recorded_tables"))[0][1], key=lambda x: int(x.split('_')[1]))
     games_dict = {}
     for table in tables:
-        games = sorted(list(os.walk(os.path.join("Poker/recorded_tables", table)))[0][1], key=lambda x: int(x.split('_')[1]))
+        games = sorted(list(os.walk(os.path.join(f"{game_type}/recorded_tables", table)))[0][1], key=lambda x: int(x.split('_')[1]))
         games_dict[table] = games
-    navbar_data['poker'] = games_dict
+    return games_dict
+
+@app.context_processor
+def inject_data():
+    navbar_data = {
+        "poker": get_games_dict("Poker"),
+        "blackjack": get_games_dict("Blackjack")
+    }
     return dict(navbar_data=navbar_data)
 
 @app.route('/')
@@ -67,9 +71,6 @@ def index():
 
 
     return render_template("index.html")
-@app.route('/navbar')
-def nav():
-    return render_template("navbar.html")
 
 @app.route('/games')
 def games_index():
@@ -92,7 +93,11 @@ def poker_index():
 
 @app.route('/blackjack')
 def blackjack_index():
-    
+    tables = sorted(list(os.walk("Blackjack/recorded_tables"))[0][1], key=lambda x: int(x.split('_')[1]))
+    games_dict = {}
+    for table in tables:
+        games = sorted(list(os.walk(os.path.join("Blackjack/recorded_tables", table)))[0][1], key=lambda x: int(x.split('_')[1]))
+        games_dict[table] = games
     return render_template("blackjack_index.html")
 
 @app.route('/poker/<table>')
