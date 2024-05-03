@@ -103,7 +103,7 @@ def table_index(table):
 
 
 @app.route('/poker/<table>/replay/<game>')
-def get_file(table, game):
+def replay_poker(table, game):
     redirect_param = request.args.get('redirect')
     redirect_arg = True if redirect_param and redirect_param.lower() == 'true' else False
     png_file_names = [x for x in list(os.walk("static"))[0][2] if x[-2:] != "js"]
@@ -122,7 +122,22 @@ def get_file(table, game):
         json_data = json.load(f)
     fps = request.args.get('fps', default=2, type=int)
 
-    return render_template('replay_game.html',filenames=png_file_names, game_data=json_data, redirect=redirect_arg, fps=fps)
+    return render_template('replay_poker_game.html',filenames=png_file_names, game_data=json_data, redirect=redirect_arg, fps=fps)
+
+@app.route('/blackjack/<table>/replay/<game>')
+def replay_blackjack(table, game):
+    redirect_param = request.args.get('redirect')
+    redirect_arg = True if redirect_param and redirect_param.lower() == 'true' else False
+    png_file_names = [x for x in list(os.walk("static"))[0][2] if x[-2:] != "js"]
+    game_folder = os.path.join(os.path.join(os.path.join(os.getcwd(), "Blackjack/recorded_tables"), f"{table}"), f"{game}")
+    if not os.path.exists(game_folder):
+        return redirect("/")
+    json_data = {}
+    with open(os.path.join(game_folder, "game_data.json"), 'r') as f:
+        json_data = json.load(f)
+    fps = request.args.get('fps', default=2, type=int)
+
+    return render_template('replay_blackjack_game.html',filenames=png_file_names, game_data=json_data, redirect=redirect_arg, fps=fps)
 
 
 def start_training(verbose=False, tables=1, consumer_thread = None):
@@ -156,15 +171,15 @@ def main():
     #for _ in range(5):
     #    train()
     #print("Web Server Started")
-    #app.run()
+    app.run()
 
 
-    consumer_thread = ConsumerThread()
-    consumer_thread.start()
-   # start_training(verbose=False, tables=10, consumer_thread=consumer_thread)
-    train_blackjack(consumer_thread, verbose=True)
-    consumer_thread.stop()
-    consumer_thread.join()
+    # consumer_thread = ConsumerThread()
+    # consumer_thread.start()
+    # start_training(verbose=False, tables=1, consumer_thread=consumer_thread)
+    # train_blackjack(consumer_thread, verbose=True)
+    # consumer_thread.stop()
+    # consumer_thread.join()
 
 if __name__ == "__main__":
     profile_results_file = "optimization_logs/profile_results.prof"

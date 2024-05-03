@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poker Replay</title>
+    <title>Blackjack Replay</title>
     <style>
         body {
             background-color: #333;
@@ -74,13 +74,12 @@
     
 
     </style>
-    <script src="{{ url_for('static', filename='game_animator.js') }}", type="text/javascript"></script>
+    <script src="{{ url_for('static', filename='blackjack_game_animator.js') }}", type="text/javascript"></script>
 </head>
 <body>
     <div id="toptext">
         <table>
             <tr>
-                <td id="gamestate">Game state: Nope</th>
                 <td><button id="toggle_game" onclick="pauseResume()">START GAME</button></th>
             </tr>
             <tr>

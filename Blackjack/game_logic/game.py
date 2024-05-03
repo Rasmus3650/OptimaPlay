@@ -42,6 +42,7 @@ class Game():
         bals = {}
         for p_id in list(self.player_list.keys()):
             bals[p_id] = self.player_list[p_id].balance
+        return bals
 
     def get_bets(self):
         for p_id in list(self.player_list.keys()):

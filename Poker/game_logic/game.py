@@ -359,7 +359,7 @@ class Game():
     def record_game(self, game_folder):
         
         # New Game Recorder - create a single dictionary containing the data for all the files
-        # Each Key in game_data will contain the data for the corresponding file in the format game_animator.js needs
+        # Each Key in game_data will contain the data for the corresponding file in the format poker_game_animator.js needs
         # This saves us from a lot of parsing in the js file
         game_data = {}
         parsed_actions = {}

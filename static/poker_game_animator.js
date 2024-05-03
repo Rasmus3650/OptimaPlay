@@ -26,14 +26,14 @@ window.onload = (event) => {
     */
 
     dealer_chip_img = new Image();
-    dealer_chip_img.src = "/static/Dealer_brick.png";
+    dealer_chip_img.src = "/static/PokerAssets/Dealer_brick.png";
 
     img = new Image();
-    img.src = "/static/Poker_table.png";
+    img.src = "/static/PokerAssets/Poker_table.png";
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
     cross_img = new Image();
-    cross_img.src = "/static/cross.png";
+    cross_img.src = "/static/misc/cross.png";
 
     cards_on_table = 0;
 
@@ -217,12 +217,12 @@ function load_cards(card_dict, table_cards) {
     var p_keys = Object.keys(card_dict);
     for (var i = 0; i < p_keys.length; i++) {
         loaded_player_card_dict[p_keys[i]] = [new Image(), new Image()]
-        loaded_player_card_dict[p_keys[i]][0].src = "/static/" + get_card_filename(card_dict[p_keys[i]][0]);
-        loaded_player_card_dict[p_keys[i]][1].src = "/static/" + get_card_filename(card_dict[p_keys[i]][1]);
+        loaded_player_card_dict[p_keys[i]][0].src = "/static/Cards/" + get_card_filename(card_dict[p_keys[i]][0]);
+        loaded_player_card_dict[p_keys[i]][1].src = "/static/Cards/" + get_card_filename(card_dict[p_keys[i]][1]);
     }
     for (var i = 0; i < table_cards.length; i++) {
         loaded_table_cards_list.push(new Image());
-        loaded_table_cards_list[loaded_table_cards_list.length - 1].src = "/static/" + get_card_filename(table_cards[i]);
+        loaded_table_cards_list[loaded_table_cards_list.length - 1].src = "/static/Cards/" + get_card_filename(table_cards[i]);
     }
 
 }
@@ -378,7 +378,7 @@ function do_action(action) {
 
 function create_action_list(ac_dict) {
     action_list = [["TRANS", "Pre-flop"]];
-    var keys = Object.keys(ac_dict);
+    var keys = ["Pre-flop", "Flop", "Turn", "River"];
     for (var i = 0; i < keys.length; i++) {
         for (var j = 0; j < ac_dict[keys[i]].length; j++) {
             action_list.push(ac_dict[keys[i]][j]);
