@@ -141,13 +141,13 @@ def train():
     train_thread.start()
     train_thread.join()
 
-def train_blackjack(verbose=False):
+def train_blackjack(consumer_thread, verbose=False):
     if not verbose:
         sys.stdout = DummyFile()
         sys.stderr = DummyFile()
     start_time = time.time()
-    number_of_tables=1
-    training_obj = BlackjackTraining(number_of_tables)
+    number_of_tables=10
+    training_obj = BlackjackTraining(number_of_tables, consumer_thread)
     end_time = time.time()
     run_time = end_time - start_time
     print(f"Total time: {run_time}\nAvg. Time Per Table: {run_time / number_of_tables}")
@@ -161,8 +161,8 @@ def main():
 
     consumer_thread = ConsumerThread()
     consumer_thread.start()
-    start_training(verbose=False, tables=10, consumer_thread=consumer_thread)
-    #train_blackjack(verbose=True)
+   # start_training(verbose=False, tables=10, consumer_thread=consumer_thread)
+    train_blackjack(consumer_thread, verbose=True)
     consumer_thread.stop()
     consumer_thread.join()
 

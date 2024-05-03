@@ -20,6 +20,9 @@ class Player():
         bet_amount = self.strategy.compute_bet_amount(self.table, self.player_id)
         self.balance = round(self.balance - bet_amount, 2)
         return bet_amount
+    
+    def clear_hand(self):
+        self.hands = {}
 
     def set_hand(self, cards):
         for hand_id, hand in enumerate(cards): 
@@ -42,6 +45,7 @@ class Player():
         return accumulators
     
     def detect_possible_actions(self, hand_id):
+        print(self.hands)
         hand_sum = self.hands[hand_id]["Value"][0]
         hand_cards = self.hands[hand_id]["Cards"]
         if hand_sum < 17 and (len(hand_cards) == 2 and hand_cards[0].current_rank == hand_cards[1].current_rank):

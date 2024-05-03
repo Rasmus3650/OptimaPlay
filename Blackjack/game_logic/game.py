@@ -3,12 +3,12 @@ import os
 from .player import Player
 from .card import Card
 import numpy as np
-
+import json
 
 
 
 class Game():
-    def __init__(self, game_id, player_list: dict[int, Player], return_function, table, start_balance: int = None, save_game = False, game_folder = None) -> None:
+    def __init__(self, game_id, player_list: dict[int, Player], return_function, table, start_balance: int = None, save_game = False, game_folder = None, consumer_thread = None) -> None:
         self.game_id = game_id
         self.player_list = player_list
         self.return_function = return_function
@@ -22,13 +22,27 @@ class Game():
         self.upcard_revealed = False
         self.current_player = list(self.player_list.keys())[0]
         self.player_hand_id = 0
-        self.bets = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
-        self.results = {0: {}, 1: {}, 2: {}, 3: {}, 4: {}, 5: {}}
+        self.bets = {}
+        self.results = {}
         self.game_folder = game_folder
-        self.all_actions = {0: [], 1: [], 2: [], 3: [], 4: [], 5: []}
+        self.all_actions = {}
+        self.consumer_thread = consumer_thread
+        self.init_dicts()
+        self.start_bals = self.get_bals()
         self.get_bets()
         self.deal_cards()
     
+    def init_dicts(self):
+        for p_id in list(self.player_list.keys()):
+            self.bets[p_id] = 0
+            self.results[p_id] = {}
+            self.all_actions[p_id] = []
+    
+    def get_bals(self):
+        bals = {}
+        for p_id in list(self.player_list.keys()):
+            bals[p_id] = self.player_list[p_id].balance
+
     def get_bets(self):
         for p_id in list(self.player_list.keys()):
             self.bets[p_id] = self.player_list[p_id].place_bet()
@@ -129,7 +143,6 @@ class Game():
         print(f"Dealers cards: {self.dealers_cards}")
         print(self.results)
         print(f"________________")
-        input(f"GAME???")
         self.game_ended = True
         if self.save_game:
             self.record_game()
@@ -139,9 +152,8 @@ class Game():
     def deal_cards(self):
         for p_id in list(self.player_list.keys()):
             player = self.player_list[p_id]
-            if player.balance > 0.01:
-                c = self.table.deck.draw_cards(2)
-                player.set_hand([c])
+            c = self.table.deck.draw_cards(2)
+            player.set_hand([c])
         self.dealer_upcard = self.table.deck.draw_cards(1)[0]
         self.dealer_downcard = self.table.deck.draw_cards(1)[0]
         self.dealers_cards = [self.dealer_upcard, self.dealer_downcard]
@@ -153,29 +165,45 @@ class Game():
         print(f"Dealer upcard: {self.dealer_upcard}")
         print(f"Dealer downcard: {self.dealer_downcard}")
 
-    def record_game(self):
-        max_len = -1
-        header_str = f""
+    def get_player_cards(self):
+        cards = {}
+        for player_id in list(self.player_list.keys()):
+            cards[player_id] = {}
+            hands = self.player_list[player_id].hands
+            for hand_id in list(hands.keys()):
+                cards[player_id][hand_id] = []
+                #print(hands[hand_id])
+                for card in hands[hand_id]["Cards"]:
+                    #print(card)
+                    cards[player_id][hand_id].append({"current_rank":card.current_rank, "current_suit":card.current_suit, "current_value":card.current_value})
+        return cards
+
+    def parse_player_actions(self):
+        actions = {}
         for p_id in list(self.all_actions.keys()):
-            header_str += f"P {p_id}, "
-            if len(self.all_actions[p_id]) > max_len:
-                max_len = len(self.all_actions[p_id])
-        header_str = header_str[:-2] + "\n"
-
-        entire_ac_str = f""
-
-        for i in range(max_len):
-            ac_str = f""
-            for p_id in list(self.all_actions.keys()):
-                if len(self.all_actions[p_id]) <= i:
-                    ac_str += f"[], "
+            actions[p_id] = []
+            for action in self.all_actions[p_id]:
+                if action.new_card is None:
+                    actions[p_id].append({"table": action.table.table_id, "player_id": action.player_id, "action_str":action.action_str,"hand_id":action.hand_id,"new_card":None})
                 else:
-                    ac_str += f"[{p_id};{self.all_actions[p_id][i].action_str};{self.all_actions[p_id][i].hand_id}], "
-            ac_str = ac_str[:-2] + "\n"
-            entire_ac_str += ac_str
-
-        csv_file = open(os.path.join(self.game_folder, f"Actions.csv"), "w")
-        csv_file.write(header_str)
-        csv_file.write(entire_ac_str)
-        csv_file.close()
+                    actions[p_id].append({"table": action.table.table_id, "player_id": action.player_id, "action_str":action.action_str,"hand_id":action.hand_id,"new_card":{"current_rank":action.new_card.current_rank, "current_suit":action.new_card.current_suit, "current_value":action.new_card.current_value}})
+        return actions
+    
+    def parse_dealer_cards(self):
+        d_cards = []
+        for card in self.dealers_cards:
+            d_cards.append({"current_rank":card.current_rank, "current_suit":card.current_suit, "current_value":card.current_value})
+        return d_cards
+    
+    def record_game(self):
+        game_data = {}
+        game_data['actions'] = self.parse_player_actions()
+        game_data['bals'] = {'start_bal': self.start_bals, 'bets': self.bets}
+        game_data['cards'] ={'dealer_cards': self.parse_dealer_cards(), 'player_cards': self.get_player_cards()}
+        print(game_data)
+        if self.consumer_thread == None:
+            with open(os.path.join(self.game_folder, f"game_data.json"), "w") as json_file:
+                json.dump(game_data, json_file)
+        else:
+            self.consumer_thread.enqueue_data(game_data, self.game_folder)
 
