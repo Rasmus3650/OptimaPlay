@@ -159,13 +159,13 @@ def main():
     #app.run()
 
 
-    #consumer_thread = ConsumerThread()
-    #consumer_thread.start()
-
-
-    start_training(verbose=False, tables=1, consumer_thread=None)
+    consumer_thread = ConsumerThread()
+    consumer_thread.start()
+    start_training(verbose=True, tables=1, consumer_thread=consumer_thread)
     #train_blackjack(verbose=True)
-    #consumer_thread.join()
+    consumer_thread.stop()
+    consumer_thread.join()
+
 if __name__ == "__main__":
     profile_results_file = "optimization_logs/profile_results.prof"
     cProfile.run('main()', profile_results_file)

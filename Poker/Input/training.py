@@ -17,11 +17,12 @@ class PokerTraining():
             for i in range(6):
                 self.table_list[table].player_joined()
             self.table_list[table].start_game()
-            
+
+        consumer_thread.enqueue_data({"stop": True}) 
         
 
 
-
+    
 
         #for i, table in enumerate(self.table_list):
         #    while len(table.seated_players)> 1:

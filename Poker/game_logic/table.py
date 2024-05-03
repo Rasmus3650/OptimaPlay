@@ -37,7 +37,7 @@ class Table():
         return path
 
     def get_game_folder(self, table_folder_path, game_id):
-        path = os.path.join(table_folder_path, f"Game_{game_id}")
+        path = table_folder_path + "/" + f"Game_{game_id}"
         if not os.path.exists(path):
             os.mkdir(path)
         return path

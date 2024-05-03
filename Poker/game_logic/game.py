@@ -74,11 +74,6 @@ class Game():
                 return player_list[curr_index]
             counter += 1
 
-            if counter == len(player_list):
-                print(f"NO PLAYERS!!!!!!!")
-                print((self.active_player_list.keys()))
-                input("")
-
 
     def get_next_active_player(self, id):
         print(list(self.player_list.keys()))
@@ -87,12 +82,6 @@ class Game():
         counter = 0
         while curr_idx not in list(self.active_player_list.keys()):
             curr_idx = (curr_idx + 1) % len(lst)
-            if counter > len(lst):
-                print(f"COULD NOT GET NEXT ACTIVE PLAYER!!")
-                print(f"TRYING TO GET PLAYER AFTER PLAYER {id}")
-                print(f"PLAYER_LIST: {self.player_list}")
-                print(f"ACTIVE_PLAYER_LIST: {self.active_player_list}")
-                input(f"[ERROR]...")
             counter += 1
 
         return self.active_player_list[curr_idx]
@@ -135,11 +124,6 @@ class Game():
         counter = 0
         while curr not in p_ids:
             curr = (curr - 1) % (max(p_ids) + 1)
-            if counter >= len(list(self.player_list.keys())):
-                print(f"COULD NOT GET TRANSITION PLAYER")
-                print(f"DEALER: {dealer}")
-                print(f"ACTIVE PLAYERLIST: {list(self.active_player_list.keys())}")
-                input(f"[ERROR]...")
             counter += 1
             
         return curr
@@ -331,18 +315,6 @@ class Game():
 
                 if len(is_not_all_in) > 0:
                     break
-            print()
-
-            
-
-
-            #input()
-            #for winner in winners:
-            #    print(f"  Player {winner[0].player_id}")
-            #    #print(f"    {winner[1]} ({winner[2]})")
-            #    winner[0].add_to_balance(round(self.pot / len(winners), 2))
-            #    self.winner_arr.append(winner[0])
-
             self.game_over()
 
         
@@ -379,9 +351,10 @@ class Game():
     def game_over(self):
         self.game_ended = True
         self.stats.print_stats()
-        
         #input()
         self.return_function()
+
+        
     
     def record_game(self, game_folder):
         
