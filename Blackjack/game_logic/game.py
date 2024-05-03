@@ -129,6 +129,7 @@ class Game():
         print(f"Dealers cards: {self.dealers_cards}")
         print(self.results)
         print(f"________________")
+        input(f"GAME???")
         self.game_ended = True
         if self.save_game:
             self.record_game()

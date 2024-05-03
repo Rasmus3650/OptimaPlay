@@ -5,7 +5,7 @@ import os
 from Strategies.GTO_strategy import GTO_strategy
 
 class Table():
-    def __init__(self, start_balance: float, side: int, save_table = True, record_folder_path = "Poker/recorded_tables/", play_untill_1_winner = True, consumer_thread=None) -> None:
+    def __init__(self, start_balance: float, table_id: int, save_table = True, record_folder_path = "Poker/recorded_tables/", play_untill_1_winner = True, consumer_thread=None) -> None:
         self.game_history: list[Game] = []
         self.seated_players = {}
         self.start_balance = start_balance
@@ -14,19 +14,10 @@ class Table():
         self.current_game = None
         self.record_folder_path = record_folder_path
         self.play_untill_1_winner = play_untill_1_winner
-        self.table_id = self.get_table_id()
+        self.table_id = table_id
         self.curr_pos = 0
-        self.side = side
-        self.corner_points = [[249,325 + (side*960)], [249, 388 + (side*960)+ 1], [249, 453 + (side*960)+1], [249, 517 + (side*960)], [249,582 + (side*960)]]
         self.save_table = save_table
         self.past_players = {}
-
-    def get_table_id(self):
-        if not os.path.exists(self.record_folder_path): return 1
-        res = len([name for name in os.listdir(self.record_folder_path)
-            if os.path.isdir(os.path.join(self.record_folder_path, name))])
-        return res + 1
-
     
     def check_if_all_folded(self):
         for player in self.current_game.player_list:
@@ -69,9 +60,6 @@ class Table():
             self.current_game.record_game(save_path)
         self.game_history.append(self.current_game)
         self.update_players()
-
-    def get_side(self):
-        return self.side
     
     def get_game_id(self):
         return self.current_game.game_id
@@ -88,5 +76,5 @@ class Table():
         self.seated_players.pop(player_id)
     
     def __repr__(self):
-        return f"Table {self.side}:\n  Seated players: {len(self.seated_players)}\n  {self.current_game}\n  Undiscovered Cards: {len(self.deck.undiscovered_cards)}\n  Discovered Cards: {len(self.deck.discovered_cards)}"
+        return f"Table {self.table_id}:\n  Seated players: {len(self.seated_players)}\n  {self.current_game}\n  Undiscovered Cards: {len(self.deck.undiscovered_cards)}\n  Discovered Cards: {len(self.deck.discovered_cards)}"
     

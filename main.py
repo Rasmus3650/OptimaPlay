@@ -128,7 +128,7 @@ def get_file(table, game):
 def start_training(verbose=False, tables=1, consumer_thread = None):
     if not verbose:
         sys.stdout = DummyFile()
-        sys.stderr = DummyFile()
+        #sys.stderr = DummyFile()
     start_time = time.time()
     number_of_tables=tables
     training_obj = PokerTraining(number_of_tables, consumer_thread=consumer_thread)
@@ -161,7 +161,7 @@ def main():
 
     consumer_thread = ConsumerThread()
     consumer_thread.start()
-    start_training(verbose=True, tables=1, consumer_thread=consumer_thread)
+    start_training(verbose=False, tables=10, consumer_thread=consumer_thread)
     #train_blackjack(verbose=True)
     consumer_thread.stop()
     consumer_thread.join()

@@ -8,10 +8,13 @@ from game_logic.player import Player
 from game_logic.game import Game
 
 class PokerTraining():
-    def __init__(self, number_of_tables: int = 1, consumer_thread = None) -> None:
+    def __init__(self, number_of_tables: int = 1, consumer_thread = None, folder_path:str = "Poker/recorded_tables") -> None:
+        self.folder_path = folder_path
+        start_num = self.get_latest_table()
+        
         self.table_list = {}
-        for i in range(number_of_tables):
-            self.table_list[i]=Table(random.randint(5,1000), i, consumer_thread=consumer_thread)
+        for i in range(start_num, start_num+number_of_tables):
+            self.table_list[i]=Table(random.randint(5,1000), table_id=i, consumer_thread=consumer_thread, record_folder_path=self.folder_path)
         
         for table in list(self.table_list.keys()):
             for i in range(6):
@@ -22,11 +25,19 @@ class PokerTraining():
         
 
 
-    
+
 
         #for i, table in enumerate(self.table_list):
         #    while len(table.seated_players)> 1:
         #        table.start_game()
+
+    def get_latest_table(self):
+        if not os.path.exists(self.folder_path): return 1
+        res = len([name for name in os.listdir(self.folder_path)
+            if os.path.isdir(os.path.join(self.folder_path, name))])
+        return res + 1
+
+
 
     def get_cards_on_hand(self, table_id: int, player_id: int = 0) -> list[Card]: #Return list of length 2
         return self.table_list[table_id].seated_players[player_id].hand
