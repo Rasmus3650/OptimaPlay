@@ -28,21 +28,6 @@ class Table():
         return res + 1
 
     
-    def get_table_folder(self):
-        if not os.path.exists(self.record_folder_path):
-            os.mkdir(self.record_folder_path)
-        path = os.path.join(self.record_folder_path, f"table_{self.table_id}")
-        if not os.path.exists(path):
-            os.mkdir(path)
-        return path
-
-    def get_game_folder(self, table_folder_path, game_id):
-        path = table_folder_path + "/" + f"Game_{game_id}"
-        if not os.path.exists(path):
-            os.mkdir(path)
-        return path
-
-    
     def check_if_all_folded(self):
         for player in self.current_game.player_list:
             if not player.folded: return False
@@ -80,7 +65,7 @@ class Table():
 
     def end_game(self):
         if self.save_table:
-            save_path = self.get_game_folder(self.get_table_folder(), self.current_game.game_id)
+            save_path = self.consumer_thread.get_game_folder(self.consumer_thread.get_table_folder(self.record_folder_path, self.table_id), self.current_game.game_id)
             self.current_game.record_game(save_path)
         self.game_history.append(self.current_game)
         self.update_players()

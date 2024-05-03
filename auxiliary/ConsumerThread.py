@@ -13,11 +13,19 @@ class ConsumerThread(threading.Thread):
         data_with_path = {'data': data, 'path': path}
         self.data_queue.put(data_with_path)
 
-    def make_table_folder(self, path):
-        pass
+    def get_table_folder(self, folder_path, table_id):
+        if not os.path.exists(folder_path):
+            os.mkdir(folder_path)
+        path = os.path.join(folder_path, f"table_{table_id}")
+        if not os.path.exists(path):
+            os.mkdir(path)
+        return path
 
-    def make_game_folder(self, path):
-        pass
+    def get_game_folder(self, table_folder_path, game_id):
+        path = table_folder_path + "/" + f"Game_{game_id}"
+        if not os.path.exists(path):
+            os.mkdir(path)
+        return path
 
     def stop(self):
         self.running.clear()
