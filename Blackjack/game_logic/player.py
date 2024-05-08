@@ -6,7 +6,7 @@ from Blackjack.Strategies.random_strategy import Random_strategy
 from Blackjack.Strategies.GTO_strategy import GTO_strategy
 
 class Player():
-    def __init__(self, player_id: int, is_us: bool = False, balance: int = 1.6, strategy = Random_strategy, table = None) -> None: #TESTING (1.6)
+    def __init__(self, player_id: int, is_us: bool = False, balance: int = 1.6, strategy = Random_strategy, table = None) -> None:
         self.player_id = player_id
         self.hands = {} #{0: {"Cards": [Card(7, "Hearts"), Card(10, "Spades")], "Value": [17, 17]}
         self.is_us = is_us
