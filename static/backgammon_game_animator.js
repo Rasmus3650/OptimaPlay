@@ -1,11 +1,17 @@
 var canvas, ctx, img, fps, interval, globalscale;
-var player_chip_positions, player_data_positions, action_text_positions;
-var player_data, curr_action_idx, action_list, game_done, loaded_assets, current_chip_list;
-var og_chip_width, new_chip_width, bigfont, mediumfont, smallfont;
+var player_chip_positions, player_data_positions, dice_positions, action_text_positions, bar_middle_pos, color_map, home_start_positions;
+var player_data, curr_action_idx, roll_action_idx, counter, action_list, game_done, loaded_assets, current_chip_list, loaded_dice, curr_bar, curr_homes, end_counter;
+var og_chip_width, new_chip_width, og_dice_width, new_dice_width, og_smallchip_width, new_smallchip_width, bigfont, mediumfont, smallfont;
 window.onload = (event) => {
     canvas = document.getElementById("myCanvas");
     ctx = canvas.getContext("2d");
     og_chip_width = 33;
+    og_dice_width = 38;
+    og_smallchip_width = 11;
+    end_counter = 3;
+    curr_bar = [];
+    curr_homes = [[], []];
+    color_map = {0: "white", 1: "black"};
 
     current_chip_list = [[1, 1], [], [], [], [], [0, 0, 0, 0, 0], [], [0, 0, 0], [], [], [], [1, 1, 1, 1, 1], [0, 0, 0, 0, 0], [], [], [], [1, 1, 1], [], [1, 1, 1, 1, 1], [], [], [], [], [0, 0]];
     img = new Image();
@@ -48,6 +54,9 @@ window.onload = (event) => {
     }
     globalscale = scaleParam
     player_data = {}
+    curr_action_idx = 0
+    roll_action_idx = -1
+    counter = 0
     load_data();
     change_scale(parseInt(scaleParam), firstcall = true);
 
@@ -74,6 +83,8 @@ function change_scale(scale, firstcall = false) {
     mediumfont = Math.round(20 * scale);
     smallfont = Math.round(18 * scale);
     new_chip_width = Math.round(og_chip_width * scale);
+    new_dice_width = Math.round(og_dice_width * scale);
+    new_smallchip_width = Math.round(og_smallchip_width * scale)
     var top_y = 20;
     var bot_y = 400 - 36 - 16 - 1;
     
@@ -105,12 +116,21 @@ function change_scale(scale, firstcall = false) {
                              22: [Math.round(478 * scale), Math.round(bot_y * scale)],
                              23: [Math.round(522 * scale), Math.round(bot_y * scale)]}
 
-    player_data_positions = {0: [Math.round(1340 * scale), Math.round(240 * scale)],
-                             1: [Math.round(1140 * scale), Math.round(390 * scale)]}
-
+    player_data_positions = {0: [Math.round(388 * scale), Math.round(16 * scale)],
+                             1: [Math.round(388 * scale), Math.round(396 * scale)]}
+    
+    var dice_y = 200 - Math.round(og_dice_width / 2)
+                            
+    dice_positions =        {0: [Math.round(380 * scale), Math.round(dice_y * scale)],
+                             1: [Math.round(440 * scale), Math.round(dice_y * scale)]}
 
     action_text_positions = {0: [Math.round(745 * scale), Math.round(90 * scale)],
                              1: [Math.round(1355 * scale), Math.round(145 * scale)]};
+    
+    home_start_positions = {0: [Math.round(564 * scale), Math.round(17 * scale)],
+                            1: [Math.round(564 * scale), Math.round(372 * scale)]}
+
+    bar_middle_pos = [Math.round(271 * scale), Math.round(181 * scale)]
 
     canvas.width = Math.round(580 * scale);
     canvas.height = Math.round(400 * scale);
@@ -140,8 +160,24 @@ function start_animation(fps) {
 
 function load_images() {
     loaded_assets = [new Image(), new Image()]
+    loaded_dice = [[new Image(), new Image(), new Image(), new Image(), new Image(), new Image()], [new Image(), new Image(), new Image(), new Image(), new Image(), new Image()]]
     loaded_assets[0].src = "/static/BackgammonAssets/White_chip.png"
     loaded_assets[1].src = "/static/BackgammonAssets/Black_chip.png"
+    loaded_dice[0][0].src = "/static/Dice/white_1.png"
+    loaded_dice[0][1].src = "/static/Dice/white_2.png"
+    loaded_dice[0][2].src = "/static/Dice/white_3.png"
+    loaded_dice[0][3].src = "/static/Dice/white_4.png"
+    loaded_dice[0][4].src = "/static/Dice/white_5.png"
+    loaded_dice[0][5].src = "/static/Dice/white_6.png"
+
+    loaded_dice[1][0].src = "/static/Dice/black_1.png"
+    loaded_dice[1][1].src = "/static/Dice/black_2.png"
+    loaded_dice[1][2].src = "/static/Dice/black_3.png"
+    loaded_dice[1][3].src = "/static/Dice/black_4.png"
+    loaded_dice[1][4].src = "/static/Dice/black_5.png"
+    loaded_dice[1][5].src = "/static/Dice/black_6.png"
+    
+    
 }
 
 
@@ -160,7 +196,6 @@ function get_redirect() {
 function load_data() {
     let data = document.getElementById("game_data").innerHTML.toString();
     json_data = JSON.parse(data);
-    console.log(json_data);
     create_action_list(json_data['actions']);
     load_images();
 }
@@ -191,20 +226,23 @@ function pauseResume(force_start = false) {
 function draw_player_chips() {
     for (var field = 0; field < current_chip_list.length; field++) {
         for (var chip_n = 0; chip_n < current_chip_list[field].length; chip_n++) {
+            if (chip_n == 5) {
+                break
+            }
             if (field < 12) {
                 ctx.drawImage(loaded_assets[current_chip_list[field][chip_n]], player_chip_positions[field][0], player_chip_positions[field][1] + (new_chip_width * chip_n), new_chip_width, new_chip_width);
             } else {
                 ctx.drawImage(loaded_assets[current_chip_list[field][chip_n]], player_chip_positions[field][0], player_chip_positions[field][1] - (new_chip_width * chip_n), new_chip_width, new_chip_width);
             }
-            //ctx.drawImage(loaded_assets[current_chip_list[field][chip_n]], player_chip_positions[field][0], player_chip_positions[field][1], new_chip_width, new_chip_width);
         }
     }
 }
 
 function draw_players_data() {
-    ctx.font = bigfont + "px Arial";
+    ctx.font = mediumfont + "px Arial";
     ctx.fillStyle = "white";
     ctx.fillText("Player 0",player_data_positions[0][0],player_data_positions[0][1])
+    ctx.fillStyle = "black";
     ctx.fillText("Player 1",player_data_positions[1][0],player_data_positions[1][1])
 }
 
@@ -212,8 +250,9 @@ function draw_players_data() {
 function create_action_list(ac_list) {
     action_list = Array(ac_list.length);
     ac_list.forEach(element => {
-        action_list[element[0]] = [element[1], element[2], element[3]]
+        action_list[element[0]] = [element[1], element[2], element[3], element[4], element[5], element[6]]
     });
+    console.log(action_list)
 }
 
 
@@ -239,17 +278,98 @@ function end_game() {
     }
 }
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function draw_dice_roll() {
+    roll_action_idx -= 1
+    var player = action_list[curr_action_idx][0]
+    var rng1 = Math.floor(Math.random() * 6)
+    var rng2 = Math.floor(Math.random() * 6)
+    ctx.drawImage(loaded_dice[player][rng1], dice_positions[0][0], dice_positions[0][1], new_dice_width, new_dice_width)
+    ctx.drawImage(loaded_dice[player][rng2], dice_positions[1][0], dice_positions[1][1], new_dice_width, new_dice_width)
+}
+
+function draw_dice(player, rolls) {
+    ctx.drawImage(loaded_dice[player][rolls[0] - 1], dice_positions[0][0], dice_positions[0][1], new_dice_width, new_dice_width)
+    ctx.drawImage(loaded_dice[player][rolls[1] - 1], dice_positions[1][0], dice_positions[1][1], new_dice_width, new_dice_width)
+}
+
+function draw_bar() {
+    var drawn_under = 0
+    var drawn_above = 0
+    for (var bar_idx = 0; bar_idx < curr_bar.length; bar_idx++) {
+        if (bar_idx == 0) {
+            ctx.drawImage(loaded_assets[curr_bar[bar_idx]], bar_middle_pos[0], bar_middle_pos[1], new_chip_width, new_chip_width);
+        } else if (bar_idx % 2 == 0) {
+            drawn_under += 1
+            ctx.drawImage(loaded_assets[curr_bar[bar_idx]], bar_middle_pos[0], bar_middle_pos[1] + (drawn_under * new_chip_width), new_chip_width, new_chip_width);
+        } else if (bar_idx % 2 == 1) {
+            drawn_above += 1
+            ctx.drawImage(loaded_assets[curr_bar[bar_idx]], bar_middle_pos[0], bar_middle_pos[1] - (drawn_above * new_chip_width), new_chip_width, new_chip_width);
+        }
+    }
+}
+
+function draw_chip_numbers() {
+    ctx.font = smallfont + "px Arial";
+    ctx.fillStyle = "red";
+    var scale = globalscale / 100
+    for (var i = 0; i < current_chip_list.length; i++) {
+        if (current_chip_list[i].length > 0) {
+            ctx.fillText(current_chip_list[i].length.toString(), player_chip_positions[i][0] + Math.round(13 * scale), player_chip_positions[i][1] + Math.round(20 * scale));
+        }
+    }
+}
+
+function draw_homes() {
+    for (var p_id = 0; p_id < curr_homes.length; p_id++) {
+        for (var chip_n = 0; chip_n < curr_homes[p_id].length; chip_n++) {
+            if (p_id == 0) {
+                ctx.drawImage(loaded_assets[p_id], home_start_positions[p_id][0], home_start_positions[p_id][1] + (chip_n * (new_smallchip_width + 1)), new_smallchip_width, new_smallchip_width)
+            }
+            if (p_id == 1) {
+                ctx.drawImage(loaded_assets[p_id], home_start_positions[p_id][0], home_start_positions[p_id][1] - (chip_n * (new_smallchip_width + 1)), new_smallchip_width, new_smallchip_width)
+            }
+        }
+    }
+}
+
 function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     draw_player_chips();
+    draw_chip_numbers();
     draw_players_data();
-    draw_dealer_cards();
-    
-    //draw_current_bets();
-    //draw_folded();
-    //draw_cards_on_table();
-
-    
+    draw_bar();
+    draw_homes();
+    if (curr_action_idx >= action_list.length) {
+        if (end_counter == 0) {
+            end_game()
+        }
+        end_counter -= 1
+    } else {
+        if (action_list[curr_action_idx][1] == "ROLL") {
+            roll_action_idx = 3
+            curr_action_idx += 1
+        }
+        if (roll_action_idx != -1) {
+            draw_dice_roll()
+            roll_action_idx -= 1
+        } else {
+            draw_dice(action_list[curr_action_idx][0], action_list[curr_action_idx][3])
+            if (counter == 1) {
+                current_chip_list = action_list[curr_action_idx][1]
+                curr_bar = action_list[curr_action_idx][2]
+                curr_homes = action_list[curr_action_idx][5]
+            }
+            if (counter == 2) {
+                curr_action_idx += 1
+                counter = 0
+            }
+            counter += 1
+        }
+    }
 }
 

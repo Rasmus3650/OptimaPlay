@@ -215,20 +215,21 @@ def train_backgammon(consumer_thread, verbose=False):
     print(f"Total time: {run_time}\nAvg. Time Per Table: {run_time / number_of_tables}")
 
 def main():
-    #for _ in range(5):
-    #    train()
-    #print("Web Server Started")
-    app.run()
 
-
-    # consumer_thread = ConsumerThread()
-    # consumer_thread.start()
+    consumer_thread = ConsumerThread()
+    consumer_thread.start()
     # start_training(verbose=False, tables=1, consumer_thread=consumer_thread)
     # train_blackjack(consumer_thread, verbose=True)
-    # train_backgammon(consumer_thread, verbose=True)
-    # consumer_thread.stop()
-    # consumer_thread.join()
+    train_backgammon(consumer_thread, verbose=True)
+    consumer_thread.stop()
+    consumer_thread.join()
+
+
+def app_main():
+    app.run()
 
 if __name__ == "__main__":
     profile_results_file = "optimization_logs/profile_results.prof"
-    cProfile.run('main()', profile_results_file)
+    #cProfile.run('main()', profile_results_file)
+    cProfile.run('app_main()', profile_results_file)
+    

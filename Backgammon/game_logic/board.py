@@ -43,8 +43,23 @@ class Board():
             if dice > max_tile and [max_tile_pos, goal, dice] not in extra_moves:
                 extra_moves.append([max_tile_pos, goal, dice])
         return extra_moves
+    
+    def get_bar_moves(self, player, available_dice):
+        moves = []
+        if player == 0:
+            for dice in available_dice:
+                if not self.is_blocked(player, 24 - dice):
+                    moves.append(["BAR", 24 - dice, dice])
+        if player == 1:
+            for dice in available_dice:
+                if not self.is_blocked(player, dice - 1):
+                    moves.append(["BAR", dice - 1, dice])
+        return moves
+
 
     def get_moves(self, player, available_dice):
+        if player in self.bar:
+            return self.get_bar_moves(player, available_dice)
         can_move_home = True
         if player == 0:
             goal = -1
@@ -73,7 +88,11 @@ class Board():
                 
     def perform_move(self, player, move):
         start, stop, steps = move
-        chip = self.board[start].pop()
+        if start == "BAR":
+            chip = player
+            self.bar.remove(player)
+        else:
+            chip = self.board[start].pop()
         if stop == -1 or stop == 24:
             self.homes[player].append(chip)
         else:

@@ -24,6 +24,7 @@ class Game():
         self.board.print_board()
         print(f"Player {self.current_player.backgammon_color} 's turn")
         roll1, roll2 = self.roll_dice()
+        self.all_actions.append([len(self.all_actions), self.current_player.backgammon_color, "ROLL", [roll1, roll2], None, None, None])
         if roll1 == roll2:
             available_dice = [roll1, roll1, roll2, roll2]
         else:
@@ -36,10 +37,11 @@ class Game():
             print(f"    Move: {move}")
             if move is not None:
                 self.board.perform_move(self.current_player.backgammon_color, move)
-                self.all_actions.append([len(self.all_actions), self.current_player.backgammon_color, self.board.board, move])
+                self.all_actions.append([len(self.all_actions), self.current_player.backgammon_color, [list(x) for x in self.board.board], list(self.board.bar), [roll1, roll2], move, [list(self.board.white_home), list(self.board.black_home)]])
                 available_dice.remove(abs(move[2]))
                 self.check_winner()
             else:
+                self.all_actions.append([len(self.all_actions), self.current_player.backgammon_color, [list(x) for x in self.board.board], list(self.board.bar), [roll1, roll2], move, [list(self.board.white_home), list(self.board.black_home)]])
                 break
             if self.game_ended:
                 break
