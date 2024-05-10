@@ -224,7 +224,9 @@ def main():
     consumer_thread.stop()
     consumer_thread.join()
 
-
+def hello_word():
+    print("hello")
+    
 def app_main():
     app.run()
 
