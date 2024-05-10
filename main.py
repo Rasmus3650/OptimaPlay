@@ -7,6 +7,7 @@ from Poker.Input.training import PokerTraining
 from Blackjack.Input.training import BlackjackTraining
 from Backgammon.Input.training import BackgammonTraining
 from auxiliary.ConsumerThread import ConsumerThread
+from EconSim.test.map_test import map_test
 from flask import *
 import threading
 import sys
@@ -48,9 +49,14 @@ class DummyFile(object):
 
 app = Flask(__name__)
 
+
+
 def get_games_dict(game_type):
-    tables = sorted(list(os.walk(f"{game_type}/recorded_tables"))[0][1], key=lambda x: int(x.split('_')[1]))
     games_dict = {}
+    if not os.path.exists(f"{game_type}/recorded_tables"):
+        return games_dict
+    tables = sorted(list(os.walk(f"{game_type}/recorded_tables"))[0][1], key=lambda x: int(x.split('_')[1]))
+
     for table in tables:
         games = sorted(list(os.walk(os.path.join(f"{game_type}/recorded_tables", table)))[0][1], key=lambda x: int(x.split('_')[1]))
         games_dict[table] = games
@@ -61,7 +67,8 @@ def inject_data():
     navbar_data = {
         "poker": get_games_dict("Poker"),
         "blackjack": get_games_dict("Blackjack"),
-        "backgammon": get_games_dict("Backgammon")
+        "backgammon": get_games_dict("Backgammon"),
+        "econsim": get_games_dict("EconSim")
     }
     return dict(navbar_data=navbar_data)
 
@@ -111,6 +118,11 @@ def backgammon_index():
         games_dict[table] = games
     return render_template("backgammon_index.html", tables=tables, games=games_dict)
 
+@app.route('/econsim')
+def econsim_index():
+    games_dict = "EconSim/game_save/game_data.json"
+    return render_template("econsim_index.html", games=games_dict)
+
 @app.route('/poker/<table>')
 def poker_table_index(table):
     return render_template("table_index.html", table=table)
@@ -122,6 +134,16 @@ def blackjack_table_index(table):
 @app.route('/backgammon/<table>')
 def backgammon_table_index(table):
     return render_template("table_index.html", table=table)
+
+@app.route('/econsim/<table>')
+def econsim_table_index(table):
+    redirect_param = request.args.get('redirect')
+    redirect_arg = True if redirect_param and redirect_param.lower() == 'true' else False
+    json_data = {}
+    print(os.getcwd())
+    with open(os.path.join(os.getcwd(), "EconSim/recorded_tables/table_1/Game_0/game_data.json"), 'r') as f:
+        json_data = json.load(f)
+    return render_template("replay_econsim_game.html", game_data = json_data, redirect=redirect_arg)
 
 @app.route('/poker/<table>/replay/<game>')
 def replay_poker(table, game):
@@ -220,7 +242,8 @@ def main():
     consumer_thread.start()
     # start_training(verbose=False, tables=1, consumer_thread=consumer_thread)
     # train_blackjack(consumer_thread, verbose=True)
-    train_backgammon(consumer_thread, verbose=True)
+    # train_backgammon(consumer_thread, verbose=True)
+    map_test(consumer_thread)
     consumer_thread.stop()
     consumer_thread.join()
 
