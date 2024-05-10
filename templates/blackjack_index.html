@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blackjack Dashboard</title>
+    <style>
+        body {
+            background-color: #333;
+            color: #eee;
+            font-family: Arial, sans-serif;
+        }
+
+        .collapsible {
+            background-color: #555;
+            color: white;
+            cursor: pointer;
+            padding: 18px;
+            width: calc(75% - 5px); /* Set the width to half of the container width with 5px subtracted for the border */
+            border: 2px solid #444; /* Add a border */
+            text-align: center; /* Center the text */
+            outline: none;
+            font-size: 15px;
+            margin-bottom: 5px;
+        }
+
+        .first-game-button {
+            margin-left: 5px; /* Add a margin between buttons */
+            width: 100%;
+        }
+
+        .active, .collapsible:hover {
+            background-color: #444;
+        }
+
+        .content {
+            display: none; /* Hide content initially */
+            overflow: hidden;
+            background-color: #666;
+        }
+
+        /* Adjust table width to match the button */
+        .content table {
+            width: 100%; /* Adjust width as needed */
+        }
+        
+        /* Align table content to the left */
+        .content table td {
+            text-align: left;
+        }
+
+        /* Align table content to the left even when display is none */
+        .always-left td {
+            text-align: left;
+        }
+
+        .tables {
+            width: 10%;
+            height: 100%;
+        }
+
+        /* Hover effect for game elements */
+        .game {
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .game:hover {
+            background-color: #777;
+        }
+        .button-container {
+            display: flex; /* Use flexbox */
+            justify-content: space-between; /* Distribute space between buttons */
+            margin-bottom: 5px; /* Move this from .collapsible to .button-container */
+        }
+
+    </style>
+    <script src="{{ url_for('static', filename='index_script.js') }}", type="text/javascript"></script>
+</head>
+<body>
+    {% include 'navbar.html' %}
+<h1>Blackjack index</h1>
+<div class="tables">
+{% for table in tables %}
+    <div class="button-container">
+    <button class="collapsible" onclick="toggleTable('{{ table }}')">{{ table }}</button>
+    <button class="collapsible first-game-button" onclick="redirectToFirstGame('{{ table }}')">First Game</button>
+    
+</div>
+    <div class="content" id="{{ table }}">
+        <!-- Your table content here -->
+        <table class="always-left"> <!-- Added the class "always-left" to the table -->
+            <!-- Table rows and columns -->
+            {% for game in games[table] %}
+            <tr>
+                <td class="game" data-table="{{ table }}" data-game="{{ game }}">{{ game }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+{% endfor %}
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+    // Get all game elements
+    var gameElements = document.querySelectorAll('.game');
+
+    // Add onclick event to each game element
+    gameElements.forEach(function(element) {
+        element.addEventListener('click', function() {
+            var table = element.getAttribute('data-table');
+            var game = element.getAttribute('data-game');
+            var url = "{{ url_for('replay_blackjack', table='table_value', game='game_value') }}"
+                .replace('table_value', table)
+                .replace('game_value', game);
+
+            // Redirect or perform other actions as needed
+            window.location.href = url;
+        });
+    });
+});
+function redirectToFirstGame(table) {
+    var firstGameElement = document.querySelector('#' + table + ' .game');
+    if (firstGameElement) {
+        var game = firstGameElement.getAttribute('data-game');
+        var url = "{{ url_for('replay_blackjack', table='table_value', game='game_value', redirect=True) }}"
+            .replace('table_value', table)
+            .replace('game_value', game);
+        window.location.href = url;
+    }
+}
+
+</script>
+
+</body>
+</html>

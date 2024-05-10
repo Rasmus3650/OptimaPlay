@@ -1,5 +1,8 @@
 *__pycache__
 
+*/__pycache__
+*.pyc
+optimization_logs
 recorded_games
 
 recorded_tables

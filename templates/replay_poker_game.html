@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poker Replay</title>
+    <style>
+        body {
+            background-color: #333;
+            color: #eee;
+            font-family: Arial, sans-serif;
+        }
+
+        canvas {
+            border: 1px solid #eee;
+        }
+
+        button {
+            background-color: #555;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #444;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 200px; /* Adjust width as needed */
+            height: 5px; /* Adjust height as needed */
+            background-color: #555;
+            border-radius: 5px;
+            outline: none;
+            margin-top: 10px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px; /* Adjust thumb width */
+            height: 20px; /* Adjust thumb height */
+            background-color: #fff;
+            border-radius: 50%;
+            border: 2px solid #555;
+            cursor: pointer;
+            margin-top: -8px; /* Adjust thumb position */
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background-color: #ddd;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:active {
+            background-color: #bbb;
+        }
+
+        #fpsValue {
+            color: #fff;
+            font-size: 16px;
+            margin-left: 10px;
+        }
+        
+        .nomargin {
+            margin: 2px;
+        }
+        #canvas-container {
+            min-width: 16px;
+            min-height: 9px;
+        }
+    
+
+    </style>
+    <script src="{{ url_for('static', filename='poker_game_animator.js') }}", type="text/javascript"></script>
+</head>
+<body>
+    <div id="toptext">
+        <table>
+            <tr>
+                <td id="gamestate">Game state: Nope</th>
+                <td><button id="toggle_game" onclick="pauseResume()">START GAME</button></th>
+            </tr>
+            <tr>
+                <td>
+                    <input type="range" min="1" max="100" value="50" id="canvasScaleSlider">
+                    <label for="canvasScaleSlider">Canvas scale</label>
+                </td>
+                <td>
+                    <input type="range" min="1" max="60" value="{{fps}}" id="fpsSlider">
+                    <span id="fpsValue">{{fps}}</span>
+                    <label for="fpsSlider">FPS</label>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="canvas-container">
+        <canvas id="myCanvas" width="0" height="0"></canvas> 
+    </div>
+    <div style="margin-left: 20px;">
+        <div id="plot"></div>
+        
+    </div>
+    
+    <div style="display:none;">
+        {% for file in filenames %}
+        <img src="{{ url_for('static', filename=file) }}" width="1600" height="900">
+        {% endfor %}
+        <p id="game_data">{{game_data | tojson | safe }}</p>
+        <p id="redirect">{{redirect}}</p>
+    </div>
+</body>
+</html>

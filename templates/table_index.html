@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{table}}</title>
+    <style>
+        /* Basic CSS for the navbar */
+        body {
+            margin: 0;
+            background-color: #333;
+            color: #eee;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    {% include 'navbar.html' %}
+
+<div style="padding: 20px;">
+    <h1>This is {{ table }}</h1>
+</div>
+
+</body>
+</html>
