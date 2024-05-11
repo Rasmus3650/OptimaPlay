@@ -61,22 +61,39 @@ window.onload = (event) => {
     */
 };
 
-function draw_map(){
-    console.log("DRAWING MAP")
-    var width = 10
-    var height = 10
-    ctx.fillStyle = "white";
-    ctx.beginPath()
-    //ctx.rect(x+(width*x), y+(height*y), width, height)
-    ctx.rect(100, 100, 100, 100)
-    ctx.fill()
-    // for (var y= 0; y > json_data["map"].length; y++){
-    //     for (var x= 0; x >json_data["map"][y].length; x++){
+function draw_map() {
+    console.log("DRAWING MAP");
+    var tileWidth = 10;
+    var tileHeight = 10;
+    var outlineWidth = 1; // Adjust this value for the thickness of the outline
+    var outlineColor = "black"; // Adjust this value for the color of the outline
+
+    for (var y = 0; y < json_data["map"]["map"].length; y++) {
+        for (var x = 0; x < json_data["map"]["map"][y].length; x++) {
+            // Draw filled rectangle for each tile
+
+            tile = json_data["map"]["map"][y][x]['biome']
+            if (tile === "Ocean") {
+                ctx.fillStyle = "blue";
+            } else if (tile === "Plains") {
+                ctx.fillStyle = "green";
+            } else if (tile === "Forest") {
+                ctx.fillStyle = "darkgreen"; // Adjusted color for Forest
+            } else if (tile === "Mountain") {
+                ctx.fillStyle = "grey";
+            } else if (tile === "Beach") {
+                ctx.fillStyle = "yellow";
+            } else {
+                ctx.fillStyle = "white"; // Default color
+            }
+            ctx.fillRect(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
             
-    //     }
-    // }
-    
-    
+            // Draw outline for each tile
+            ctx.strokeStyle = outlineColor;
+            ctx.lineWidth = outlineWidth;
+            ctx.strokeRect(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
+        }
+    }
 }
     
 

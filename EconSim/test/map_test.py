@@ -26,7 +26,7 @@ class ComplexEncoder(json.JSONEncoder):
 
 
 def map_test(consumer_thread):
-    map = Map(50,50)
+    map = Map(200,200)
     company1 = Company("1", None, 1)
     company2 = Company("2", None, 1)
     company3 = Company("3", None, 1)

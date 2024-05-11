@@ -1,6 +1,8 @@
-import unittest
-from EconSim.game_logic.Company import Company
-from  EconSim.game_logic.Market import Market
+import unittest, sys, os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+from game_logic.Company import Company
+from  game_logic.Market import Market
 
 class TestMarketFunctions(unittest.TestCase):
     def setUp(self):
@@ -29,5 +31,7 @@ class TestMarketFunctions(unittest.TestCase):
         company1.spawn_item("wood", 100)
         company1.place_order("limit", "sell","wood",50, 10)
         company2.place_order("limit", "buy","wood",50, 10)
+        self.assertEqual(company1.inventory['wood'], 50)
+        self.assertEqual(company2.inventory['wood'], 50)
 if __name__ == '__main__':
     unittest.main()
