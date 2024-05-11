@@ -1,11 +1,55 @@
 var canvas, ctx, globalscale;
 var zoomLevel = 1;
+var tileWidth = 10;
+var tileHeight = 10;
 window.onload = (event) => {
     canvas = document.getElementById("myCanvas");
     ctx = canvas.getContext("2d");
     document.getElementById('zoomInButton').addEventListener('click', zoomIn);
     document.getElementById('zoomOutButton').addEventListener('click', zoomOut);
+    var table = document.getElementById('tileInfo');
+    var tableTitle = document.getElementById('tableTitle');
+
+    table.style.display = 'none';
+    tableTitle.style.display = 'none';
+
+    canvas.addEventListener('click', function(event) {
+        var rect = canvas.getBoundingClientRect();
+        var x = event.clientX - rect.left;
+        var y = event.clientY - rect.top;
     
+        var tileX = Math.floor((x / zoomLevel + scrollX) / tileWidth);
+        var tileY = Math.floor((y / zoomLevel + scrollY) / tileHeight);
+    
+        var tile = json_data['map']['map'][tileY][tileX];
+    
+        // Get the reference to the table element before trying to access it
+        var table = document.getElementById('tileInfo');
+    
+        if(tile){
+            tile['X'] = tileX;
+            tile['Y'] = tileY;
+            table.style.display = '';
+            tableTitle.style.display = '';
+            table.innerHTML = '';
+            for (var key in tile) {
+                var row = table.insertRow();
+                var cell1 = row.insertCell();
+                var cell2 = row.insertCell();
+                cell1.textContent = key;
+                if (typeof tile[key] === 'object' && tile[key] !== null) {
+                    // Convert the object to a string
+                    cell2.textContent = JSON.stringify(tile[key], null, 2);
+                } else {
+                    cell2.textContent = tile[key];
+                }
+            }
+        } else {
+            table.style.display = 'none';
+            tableTitle.style.display = 'none';
+        }
+    });
+
     //img = new Image();
     //img.src = "/static/.png";
     //ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -82,6 +126,7 @@ window.addEventListener('keydown', function(event) {
     }
 });
 
+
 function zoomIn() {
     zoomLevel += 0.1;
     draw_map();
@@ -118,8 +163,6 @@ function scrollDown() {
 
 function draw_map() {
     console.log("DRAWING MAP");
-    var tileWidth = 10;
-    var tileHeight = 10;
     var outlineWidth = 1; // Adjust this value for the thickness of the outline
     var outlineColor = "black"; // Adjust this value for the color of the outline
 
