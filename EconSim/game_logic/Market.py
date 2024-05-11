@@ -30,8 +30,7 @@ class Market:
         self.buy_orders = {}   # dict containing item as key and a list of buy orders
         self.transaction_log = TransactionLog()
 
-    def to_json(self):
-        return dict(sell_orders =  self.sell_orders, buy_orders = self.buy_orders, transaction_log = self.transaction_log)
+
     
 
     def create_order(self, company, item, amount, price, direction):
