@@ -1,7 +1,10 @@
 var canvas, ctx, globalscale;
+var zoomLevel = 1;
 window.onload = (event) => {
     canvas = document.getElementById("myCanvas");
     ctx = canvas.getContext("2d");
+    document.getElementById('zoomInButton').addEventListener('click', zoomIn);
+    document.getElementById('zoomOutButton').addEventListener('click', zoomOut);
     
     //img = new Image();
     //img.src = "/static/.png";
@@ -61,6 +64,58 @@ window.onload = (event) => {
     */
 };
 
+
+window.addEventListener('keydown', function(event) {
+    switch (event.key) {
+        case 'w':
+            scrollUp();
+            break;
+        case 'a':
+            scrollLeft();
+            break;
+        case 's':
+            scrollDown();
+            break;
+        case 'd':
+            scrollRight();
+            break;
+    }
+});
+
+function zoomIn() {
+    zoomLevel += 0.1;
+    draw_map();
+}
+
+function zoomOut() {
+    if (zoomLevel > 0.1) {
+        zoomLevel -= 0.1;
+        draw_map();
+    }
+}
+
+function scrollLeft() {
+    scrollX -= 50; 
+    draw_map(); 
+}
+
+function scrollRight() {
+    scrollX += 50; 
+    draw_map(); 
+}
+
+function scrollUp() {
+    scrollY -= 50; 
+    draw_map(); 
+}
+
+function scrollDown() {
+    scrollY += 50; 
+    draw_map(); 
+}
+
+
+
 function draw_map() {
     console.log("DRAWING MAP");
     var tileWidth = 10;
@@ -68,6 +123,13 @@ function draw_map() {
     var outlineWidth = 1; // Adjust this value for the thickness of the outline
     var outlineColor = "black"; // Adjust this value for the color of the outline
 
+    ctx.save(); // Save the current state of the context
+
+    // Fill the entire canvas with a default color
+    ctx.fillStyle = "#333"; // Change this to whatever color you want
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.scale(zoomLevel, zoomLevel);
     for (var y = 0; y < json_data["map"]["map"].length; y++) {
         for (var x = 0; x < json_data["map"]["map"][y].length; x++) {
             // Draw filled rectangle for each tile
@@ -86,14 +148,15 @@ function draw_map() {
             } else {
                 ctx.fillStyle = "white"; // Default color
             }
-            ctx.fillRect(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
+            ctx.fillRect(x * tileWidth - scrollX, y * tileHeight - scrollY, tileWidth, tileHeight);
             
             // Draw outline for each tile
             ctx.strokeStyle = outlineColor;
             ctx.lineWidth = outlineWidth;
-            ctx.strokeRect(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
+            ctx.strokeRect(x * tileWidth - scrollX, y * tileHeight - scrollY, tileWidth, tileHeight);
         }
     }
+    ctx.restore();
 }
     
 

@@ -95,14 +95,14 @@
             </tr>
         </table>
     </div>
-    <div id="canvas-container">
-        <canvas id="myCanvas" width="1000" height="1000"></canvas> 
+    <div style="display: flex; align-items: flex-start;">
+        <div id="canvas-container">
+            <canvas id="myCanvas" width="1000" height="1000"></canvas> 
+        </div>
+        <button id="zoomInButton">Zoom In</button>
+        <button id="zoomOutButton">Zoom Out</button>
     </div>
-    <div style="margin-left: 20px;">
-        <div id="plot"></div>
-        
-    </div>
-    
+
     <div style="display:none;">
         {% for file in filenames %}
         <img src="{{ url_for('static', filename=file) }}" width="1600" height="900">
