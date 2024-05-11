@@ -33,6 +33,9 @@ class TestMarketFunctions(unittest.TestCase):
         company1.place_order("limit", "sell","wood",50, 10)
         company2.set_balance(500)
         company2.place_order("limit", "buy","wood",50, 10)
+
+        #TODO FIX THIS TEST CASE
+
         #self.assertEqual(company1.inventory['wood'], 50)
         #self.assertEqual(company2.inventory['wood'], 50)
 if __name__ == '__main__':

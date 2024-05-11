@@ -4,31 +4,85 @@ from opensimplex import OpenSimplex
 
 
 class Resource():
-    def __init__(self, type, start_amount):
+    def __init__(self, type, start_amount, regen_rate=0, extraction_rate = 1):
 
         self.type = type
         self.amount = start_amount # The amount of resource left in a given tile
+        self.regen_rate = regen_rate
+        self.extraction_rate = extraction_rate
 
+        self.renewable = type in ["Wood", "Food", "Water"]
 
-        self.renewable = False
-        if type == "Wood" or type == "Food":
-            self.renewable = True
+    def regenerate(self):
+        if self.renewable:
+            self.amount += self.regen_rate
 
-    def regenerate(self, type):
-        # Regenerate a given resource over time (different for each resource)
-        pass
+    def extract(self):
+        if self.amount > 0:
+            self.amount -= self.extraction_rate
+            #TODO Add this resource to the company's inventory
 
     def reprJSON(self):
-        return dict(type=self.type, amount=self.amount, renewable=self.renewable)
+        return dict(type=self.type, amount=self.amount, renewable=self.renewable, extractionRate=self.extraction_rate, regenRate=self.regen_rate)
 
 class Building():
-    def __init__(self, type, owner) -> None:
+    def __init__(self, type, owner, level=1) -> None:
         self.type = type
         self.owner = owner
+        self.level = level
+
+    def produce(self):
+        pass
     
     def reprJSON(self):
-        return dict(type=self.type, owner=self.owner)
+        return dict(type=self.type, owner=self.owner, level=self.level)
 
+    def upgrade(self):
+        self.level += 1
+
+
+
+
+class LumberMill(Building):
+    def __init__(self, owner, level=1):
+        super().__init__(owner, level)
+        self.production_rate = 10 * level
+
+    def produce(self):
+        return {"Wood": self.production_rate}
+
+    def reprJSON(self):
+        parent_dict = super().reprJSON()
+        parent_dict.update({"production_rate": self.production_rate})
+        return parent_dict
+
+
+class Mine(Building):
+    def __init__(self, owner, level=1):
+        super().__init__("Mine", owner, level)
+        self.production_rate = 10 * level
+
+    def produce(self):
+        return {"Iron": self.production_rate}
+
+    def reprJSON(self):
+        parent_dict = super().reprJSON()
+        parent_dict.update({"production_rate": self.production_rate})
+        return parent_dict
+    
+
+class Farm(Building):
+    def __init__(self, owner, level=1):
+        super().__init__("Farm", owner, level)
+        self.production_rate = 10 * level
+
+    def produce(self):
+        return {"Food": self.production_rate}
+    
+    def reprJSON(self):
+        parent_dict = super().reprJSON()
+        parent_dict.update({"production_rate": self.production_rate})
+        return parent_dict
 
 class Tile():
     def __init__(self, biome, resources):
