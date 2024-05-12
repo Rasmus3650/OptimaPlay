@@ -1,4 +1,4 @@
-import random, uuid, arcade
+import random, uuid
 import numpy as np
 from opensimplex import OpenSimplex
 
@@ -19,69 +19,82 @@ class Resource():
 
     def extract(self):
         if self.amount > 0:
-            self.amount -= self.extraction_rate
+            to_extract = min(self.extraction_rate, self.amount)
+            self.amount -= to_extract
             #TODO Add this resource to the company's inventory
+        else:
+            to_extract = 0
+        return to_extract
 
     def reprJSON(self):
         return dict(type=self.type, amount=self.amount, renewable=self.renewable, extractionRate=self.extraction_rate, regenRate=self.regen_rate)
 
+
 class Building():
-    def __init__(self, type, owner, level=1) -> None:
+    def __init__(self, type, owner, x, y, level=1, max_storage=100) -> None:
         self.type = type
         self.owner = owner
         self.level = level
+        self.max_storage = max_storage
+        self.storage = 0
+        self.production_rate = 10 * level
+        self.x = x
+        self.y = y
 
     def produce(self):
-        pass
+        self.storage += self.production_rate
     
     def reprJSON(self):
-        return dict(type=self.type, owner=self.owner, level=self.level)
+        return dict(type=self.type, owner=self.owner, level=self.level, storage=self.storage, max_storage=self.max_storage, production_rate=self.production_rate)
 
     def upgrade(self):
         self.level += 1
+        self.production_rate = 10 * self.level
 
 
 
 
 class LumberMill(Building):
-    def __init__(self, owner, level=1):
-        super().__init__(owner, level)
+    def __init__(self, owner, x, y, level=1):
+        super().__init__("LumberMill", owner, level)
         self.production_rate = 10 * level
 
-    def produce(self):
-        return {"Wood": self.production_rate}
+    # def produce(self):
+    #     self.storage += self.production_rate
+    #     #return {"Wood": self.production_rate}
 
     def reprJSON(self):
         parent_dict = super().reprJSON()
-        parent_dict.update({"production_rate": self.production_rate})
+        #parent_dict.update({"production_rate": self.production_rate})
         return parent_dict
 
 
 class Mine(Building):
-    def __init__(self, owner, level=1):
+    def __init__(self, owner, x, y,  level=1):
         super().__init__("Mine", owner, level)
         self.production_rate = 10 * level
 
-    def produce(self):
-        return {"Iron": self.production_rate}
+    # def produce(self):
+    #     self.storage += self.production_rate
+    #     return {"Iron": self.production_rate}
 
     def reprJSON(self):
         parent_dict = super().reprJSON()
-        parent_dict.update({"production_rate": self.production_rate})
+        #parent_dict.update({"production_rate": self.production_rate})
         return parent_dict
     
 
 class Farm(Building):
-    def __init__(self, owner, level=1):
+    def __init__(self, owner, x, y,  level=1):
         super().__init__("Farm", owner, level)
         self.production_rate = 10 * level
 
-    def produce(self):
-        return {"Food": self.production_rate}
+    # def produce(self):
+    #     return {"Food": self.production_rate}
     
     def reprJSON(self):
         parent_dict = super().reprJSON()
-        parent_dict.update({"production_rate": self.production_rate})
+        #parent_dict.update({"production_rate": self.production_rate})
         return parent_dict
 
 class Tile():
@@ -110,6 +123,9 @@ class Map():
         self.map = self.generate_world()
         self.all_biomes = ['Forest', 'Mountain', 'Plains', 'Beach', 'Ocean']
         self.all_resources = ['Wood', 'Water', 'Stone', 'Iron', 'Food']
+        self.biome_to_building_map = {"Forest": "LumberMill", "Mountain": "Mine"}
+        self.building_to_biome_map = {"LumberMill": "Forest", "Mine": "Mountain"}
+        
     
     
     def generate_seed(self):
@@ -165,7 +181,22 @@ class Map():
             while self.map[random_row][random_column].biome == "Ocean":
                 random_row = random.randint(0, self.height - 1)
                 random_column = random.randint(0, self.width - 1)
-            self.map[random_row][random_column].place_building(Building("HQ", company))
+            build = Building("HQ", company, random_column, random_row)
+            self.map[random_row][random_column].place_building(build)
+            company.buildings.append(build)
+            print(f"Spawning HQ at {random_row}, {random_column}")
+    
+    def spawn_building(self, building_type, owner):
+        target_biome = self.building_to_biome_map[building_type]
+        random_row = random.randint(0, self.height - 1)
+        random_column = random.randint(0, self.width - 1)
+        while self.map[random_row][random_column].biome != target_biome:
+            random_row = random.randint(0, self.height - 1)
+            random_column = random.randint(0, self.width - 1)
+        to_build = Building(building_type, owner, random_column, random_row)
+        self.map[random_row][random_column].place_building(to_build)
+        print(f"Spawning {building_type} at {random_row}, {random_column}")
+        return to_build
     
     def __repr__(self):
         representation = ""

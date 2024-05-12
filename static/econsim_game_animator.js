@@ -178,18 +178,25 @@ function draw_map() {
             // Draw filled rectangle for each tile
 
             tile = json_data["map"]["map"][y][x]['biome']
-            if (tile === "Ocean") {
-                ctx.fillStyle = "blue";
-            } else if (tile === "Plains") {
-                ctx.fillStyle = "green";
-            } else if (tile === "Forest") {
-                ctx.fillStyle = "darkgreen"; // Adjusted color for Forest
-            } else if (tile === "Mountain") {
-                ctx.fillStyle = "grey";
-            } else if (tile === "Beach") {
-                ctx.fillStyle = "yellow";
+            building = json_data["map"]["map"][y][x]['building']
+            if (building != null) {
+                if (building["type"] == "HQ") {
+                    ctx.fillStyle = "red";
+                }
             } else {
-                ctx.fillStyle = "white"; // Default color
+                if (tile === "Ocean") {
+                    ctx.fillStyle = "blue";
+                } else if (tile === "Plains") {
+                    ctx.fillStyle = "green";
+                } else if (tile === "Forest") {
+                    ctx.fillStyle = "darkgreen"; // Adjusted color for Forest
+                } else if (tile === "Mountain") {
+                    ctx.fillStyle = "grey";
+                } else if (tile === "Beach") {
+                    ctx.fillStyle = "yellow";
+                } else {
+                    ctx.fillStyle = "white"; // Default color
+                }
             }
             ctx.fillRect(x * tileWidth - scrollX, y * tileHeight - scrollY, tileWidth, tileHeight);
             

@@ -2,6 +2,7 @@ import sys, os, json
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from game_logic.terrain.Map import Map
 from game_logic.Company import Company
+from game_logic.Drone import Drone
 from game_logic.Market import Market
 
 # import unittest
@@ -30,7 +31,15 @@ def map_test(consumer_thread):
     company1 = Company("1", None, 1)
     company2 = Company("2", None, 1)
     company3 = Company("3", None, 1)
+    drone1 = Drone(owner=company1)
     map.spawn_headquarters([company1, company2, company3])
+    lumbermill = map.spawn_building("LumberMill", company1)
+    lumbermill.produce()
+    lumbermill.produce()
+    lumbermill.produce()
+    lumbermill.produce()
+    drone1.transport(lumbermill, company1.buildings[0])
+    
     #print(map)
     save = {}
     save['map'] = json.dumps(map.reprJSON(), cls=ComplexEncoder)

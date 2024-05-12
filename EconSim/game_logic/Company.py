@@ -6,6 +6,7 @@ class Company():
         self.company_name = name
         self.market = market
         self.workers = {}
+        self.buildings = []
         self.hire_workers(workers)
 
     def reprJSON(self):
