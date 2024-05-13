@@ -1,4 +1,4 @@
-from .card import Card
+from Blackjack.game_logic.card import Card
 import random
 
 class Deck():

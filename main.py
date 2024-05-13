@@ -19,27 +19,6 @@ import pstats
 import cProfile
 import snakeviz
 sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
-# def main2():
-#     vis = Visual_input()
-#     image = cv2.imread("./assets/img1.jpg")
-#     id = 4
-#     side = 1
-#     cards = vis.get_cards_on_hand(side, id, image)
-#     #image = None
-#     #print(f"CARDS ON HAND:")
-#     #for card in cards: print(f"  {card}")
-
-#     print(f"Calling get_cards_on_table")
-#     on_table = vis.get_cards_on_table(["Pre-Flop","Turn"], image)
-
-#     for i, side in enumerate(["Left", "Right"]):
-#         print(f"{side} table:")
-#         for card in on_table[i]:
-#             print(f"  {card.current_rank}, {card.current_suit}")
-#         print()
-    
-    
-#     #vis.get_cards_on_table("River", image, side=0)
 class DummyFile(object):
     def write(self, x):
         pass
@@ -47,6 +26,8 @@ class DummyFile(object):
     def flush(self):
         pass
 
+
+consumer_thread = None
 
 app = Flask(__name__)
 
@@ -94,6 +75,8 @@ def games_index():
 
 @app.route('/poker')
 def poker_index():
+    if not os.path.exists("Poker/recorded_tables"):
+        os.mkdir("Poker/recorded_tables")
     tables = sorted(list(os.walk("Poker/recorded_tables"))[0][1], key=lambda x: int(x.split('_')[1]))
     games_dict = {}
     for table in tables:
@@ -103,6 +86,8 @@ def poker_index():
 
 @app.route('/blackjack')
 def blackjack_index():
+    if not os.path.exists("Blackjack/recorded_tables"):
+        os.mkdir("Blackjack/recorded_tables")
     tables = sorted(list(os.walk("Blackjack/recorded_tables"))[0][1], key=lambda x: int(x.split('_')[1]))
     games_dict = {}
     for table in tables:
@@ -112,6 +97,8 @@ def blackjack_index():
 
 @app.route('/backgammon')
 def backgammon_index():
+    if not os.path.exists("Backgammon/recorded_tables"):
+        os.mkdir("Backgammon/recorded_tables")
     tables = sorted(list(os.walk("Backgammon/recorded_tables"))[0][1], key=lambda x: int(x.split('_')[1]))
     games_dict = {}
     for table in tables:
@@ -188,7 +175,7 @@ def replay_backgammon(table, game):
     redirect_param = request.args.get('redirect')
     redirect_arg = True if redirect_param and redirect_param.lower() == 'true' else False
     png_file_names = [x for x in list(os.walk("static"))[0][2] if x[-2:] != "js"]
-    game_folder = os.path.join(os.path.join(os.path.join(os.getcwd(), "Backgammon/recorded_tables"), f"{table}"), f"{game}")
+    game_folder = os.path.join(os.path.join(os.path.join(os.getcwd(), "Backgammon\\recorded_tables"), f"{table}"), f"{game}")
     if not os.path.exists(game_folder):
         return redirect("/")
     json_data = {}
@@ -198,53 +185,64 @@ def replay_backgammon(table, game):
 
     return render_template('replay_backgammon_game.html',filenames=png_file_names, game_data=json_data, redirect=redirect_arg, fps=fps)
 
-
-def start_training(verbose=False, tables=1, consumer_thread = None):
-    if not verbose:
-        sys.stdout = DummyFile()
-        #sys.stderr = DummyFile()
+@app.route('/poker/start_training', methods=["POST"])
+def start_training():
+    global consumer_thread
     start_time = time.time()
-    number_of_tables=tables
-    training_obj = PokerTraining(number_of_tables, consumer_thread=consumer_thread)
+    number_of_tables=int(request.form['table_n'])
+    strategies = []
+    for item in list(request.form.keys()):
+        if "strategies" in item:
+            strategies.append(request.form[item])
+    PokerTraining(number_of_tables, consumer_thread=consumer_thread, strategies=strategies)
     end_time = time.time()
     run_time = end_time - start_time
     print(f"Total time: {run_time}\nAvg. Time Per Table: {run_time / number_of_tables}")
+    return redirect("/poker")
 
-def train():
-    train_thread = threading.Thread(target=start_training, args=(True,))
-    train_thread.start()
-    train_thread.join()
+@app.route('/blackjack/start_training', methods=["POST"])
+def train_blackjack():
+    global consumer_thread
 
-def train_blackjack(consumer_thread, verbose=False):
-    if not verbose:
-        sys.stdout = DummyFile()
-        sys.stderr = DummyFile()
     start_time = time.time()
-    number_of_tables=10
-    training_obj = BlackjackTraining(number_of_tables, consumer_thread)
+    strategies = []
+    number_of_tables=int(request.form['table_n'])
+    for item in list(request.form.keys()):
+        if "strategies" in item:
+            strategies.append(request.form[item])
+    BlackjackTraining(number_of_tables, consumer_thread, strategies=strategies)
     end_time = time.time()
     run_time = end_time - start_time
     print(f"Total time: {run_time}\nAvg. Time Per Table: {run_time / number_of_tables}")
+    return redirect("/blackjack")
 
-def train_backgammon(consumer_thread, verbose=False):
-    if not verbose:
-        sys.stdout = DummyFile()
-        sys.stderr = DummyFile()
+@app.route('/backgammon/start_training', methods=["POST"])
+def train_backgammon():
+    global consumer_thread 
     start_time = time.time()
-    number_of_tables=10
-    training_obj = BackgammonTraining(number_of_tables, consumer_thread)
+    strategies = []
+    number_of_tables=int(request.form['table_n'])
+    for item in list(request.form.keys()):
+        if "strategies" in item:
+            strategies.append(request.form[item])
+    BackgammonTraining(number_of_tables, consumer_thread, strategies=strategies)
     end_time = time.time()
     run_time = end_time - start_time
     print(f"Total time: {run_time}\nAvg. Time Per Table: {run_time / number_of_tables}")
+    return redirect("/backgammon")
+
+
+
+
 
 def main():
 
     consumer_thread = ConsumerThread()
     consumer_thread.start()
-    # start_training(verbose=False, tables=1, consumer_thread=consumer_thread)
+    start_training(tables=5, consumer_thread=consumer_thread)
     # train_blackjack(consumer_thread, verbose=True)
     # train_backgammon(consumer_thread, verbose=True)
-    map_test(consumer_thread)
+    # map_test(consumer_thread)
     consumer_thread.stop()
     consumer_thread.join()
 
@@ -252,10 +250,15 @@ def hello_word():
     print("hello")
     
 def app_main():
+    global consumer_thread
+    consumer_thread = ConsumerThread()
+    consumer_thread.start()
     app.run()
+    consumer_thread.stop()
+    consumer_thread.join()
 
 if __name__ == "__main__":
     profile_results_file = "optimization_logs/profile_results.prof"
-    cProfile.run('main()', profile_results_file)
-    #cProfile.run('app_main()', profile_results_file)
+    #cProfile.run('main()', profile_results_file)
+    cProfile.run('app_main()', profile_results_file)
     

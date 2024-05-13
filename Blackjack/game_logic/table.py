@@ -1,7 +1,9 @@
-from .game import Game
-from .deck import Deck
-from .player import Player
+from Blackjack.game_logic.game import Game
+from Blackjack.game_logic.deck import Deck
+from Blackjack.game_logic.player import Player
 import os
+from Blackjack.Strategies.GTO_strategy import GTO_strategy
+from Blackjack.Strategies.random_strategy import Random_strategy
 
 
 class Table():
@@ -18,6 +20,7 @@ class Table():
         self.save_table = save_table
         self.reset = reset
         self.consumer_thread = consumer_thread
+        self.strategy_map = {"random": Random_strategy, "gto": GTO_strategy}
         self.table_id = table_id
 
 
@@ -41,14 +44,9 @@ class Table():
             game_folder = self.get_game_folder(self.get_table_folder(), len(self.game_history))
         else:
             game_folder = None
-
-
         self.current_game = Game(len(self.game_history), self.seated_players, return_function=self.end_game, table=self, save_game=self.save_table, game_folder=game_folder, consumer_thread=self.consumer_thread)
-        print(f"\nSTARTING GAME {self.current_game.game_id}...")
         while not self.current_game.game_ended:
             action = self.current_game.player_performed_action()
-        print(f"GAME {self.current_game.game_id} ENDED\n")
-        
         
         if self.play_untill_1_winner and len(list(self.seated_players.keys())) > 1:
             self.start_game()
@@ -58,18 +56,17 @@ class Table():
         for p_id in list(self.seated_players.keys()):
             self.seated_players[p_id].clear_hand()
 
-    def player_joined(self): 
+    def player_joined(self, strategy): 
         id = len(list(self.seated_players.keys()))
         #if id == 0:
         #    self.seated_players[id] = Player(id, len(self.seated_players) == 0, self.start_balance, table=self, strategy=GTO_strategy)
         #else:
-        self.seated_players[id] = Player(id, len(self.seated_players) == 0, self.start_balance, table=self)
+        self.seated_players[id] = Player(id, len(self.seated_players) == 0, self.start_balance, strategy= self.strategy_map[strategy.lower()],table=self)
 
     def player_left(self, player_id):
         self.seated_players.pop(player_id)
 
     def end_game(self):
-        print(f"Game has ended")
         self.game_history.append(self.current_game)
         self.clear_player_hands()
         self.update_players()

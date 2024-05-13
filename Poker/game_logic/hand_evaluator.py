@@ -37,10 +37,6 @@ class Hand_Evaluator():
             return return_if_hand2
         
         if hand1_str == "Two Pairs" or hand1_str == "Full House":
-            if hand2_str != "Two Pairs" and hand2_str != "Full House":
-                print(f"This should not happen..... 'hand_evaluator.py' 'compate_hands'-method")
-                print(f"How can hand1 be 'two pairs' or 'full house' while hand2 isn't??? Shouldn't they then be caught in the first if of this method??????")
-                exit(0)
             if hand1_primary_secondary_rank > hand2_primary_secondary_rank:
                 return return_if_hand1
             elif hand1_primary_secondary_rank < hand2_primary_secondary_rank:
@@ -69,55 +65,43 @@ class Hand_Evaluator():
         
         royal_flush, royal_flush_res, kicker = self.compute_straight_flush(hand, card_on_table, hand_suits, table_suits, royal=True)
         if royal_flush:
-            #print(f"ROYAL FLUSH: {royal_flush}:\n  {royal_flush_res}")
             return royal_flush_res, kicker, None
             
         straight_flush, straight_flush_res, kicker = self.compute_straight_flush(hand, card_on_table, hand_suits, table_suits, royal=False)
         if straight_flush:
-            #print(f"STRAIGHT FLUSH: {straight_flush}:\n  {straight_flush_res}")
             return straight_flush_res, kicker, None
         
         four_of_a_kind, four_of_a_kind_res, kicker = self.compute_four_of_a_kind(hand, card_on_table, hand_ranks, table_ranks)
         if four_of_a_kind:
-            #print(f"FOUR OF A KIND: {four_of_a_kind}:\n  {four_of_a_kind_res}")
             return four_of_a_kind_res, kicker, None
         
         full_house, full_house_res, kicker, second_rank = self.compute_full_house(hand, card_on_table, hand_ranks, table_ranks)
         if full_house:
-            #print(f"FULL HOUSE: {full_house}:\n  {full_house_res}")
             return full_house_res, kicker, second_rank
 
         flush, flush_res, kicker = self.compute_flush(hand, card_on_table, hand_suits, table_suits)
         if flush:
-            #print(f"FLUSH: {flush}:\n  {flush_res}")
             return flush_res, kicker, None
         
         straight, straight_res, kicker = self.compute_straight(hand, card_on_table, hand_ranks, table_ranks)
         if straight:
-            #print(f"STRAIGHT: {straight}:\n  {straight_res}")
             return straight_res, kicker, None
         
         three_of_a_kind, three_of_a_kind_res, kicker = self.compute_three_of_a_kind(hand, card_on_table, hand_ranks, table_ranks)
         if three_of_a_kind:
-            #print(f"THREE OF A KIND: {three_of_a_kind}:\n  {three_of_a_kind_res}")
             return three_of_a_kind_res, kicker, None
         
         two_pairs, two_pairs_res, kicker, second_rank = self.compute_two_pairs(hand, card_on_table, hand_ranks, table_ranks)
         if two_pairs:
-            #print(f"TWO PAIRS: {two_pairs}:\n  {two_pairs_res}")
             return two_pairs_res, kicker, second_rank
         
         one_pair, one_pairs_res, kicker = self.compute_one_pair(hand, card_on_table, hand_ranks, table_ranks)
         if one_pair:
-            #print(f"ONE PAIR: {one_pair}:\n  {one_pairs_res}")
             return one_pairs_res, kicker, None
 
         high_card, high_card_res, kicker = self.compute_high_card(hand, card_on_table, hand_ranks, table_ranks)
         if high_card:
-            #print(f"HIGH CARD: {high_card}:\n  {high_card_res}")
             return high_card_res, kicker, None
-        
-        print(f"ERROR: this shouldn't happen")
         return None
 
     def compute_straight_flush(self, hand, card_on_table, hand_suits: list[str], table_suits: list[str], royal = False) -> tuple[str, int]:

@@ -41,4 +41,4 @@ class Deck():
 
     def __repr__(self) -> str:
         return_str = f"Deck: \nCards played {len(self.discovered_cards)} / {len(self.undiscovered_cards)}\n(More details: 'print_discovered_cards()' and 'print_undiscovered_cards()')\n"
-        
+        return return_str

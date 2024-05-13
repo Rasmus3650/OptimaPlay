@@ -25,7 +25,7 @@ class Building():
 
         result = {}
 
-        for resource in 
+        #for resource in 
         self.inventory.add_items(self.resource_prod, self.production_rate)
         # if self.resource_prod in list(self.inventory.keys()):
         #     self.inventory[self.resource_prod] += self.production_rate

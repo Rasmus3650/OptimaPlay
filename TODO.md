@@ -3,7 +3,6 @@
 [ ] Identify Bottlenecks with cProfile and SnakeViz<br>
 [ ] Identify bottlenecks with multi-threading using GILView and snakeviz <br>
 [ ] Create the Model Interface<br>
-[ ] Start Training from the Web Server <br>
 [ ] Implement greedy strategy (André) <br>
 [ ] Add a requirements.txt to ensure we all have the same packages and versions
 # Non-Essential<br>

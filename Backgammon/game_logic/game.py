@@ -20,21 +20,16 @@ class Game():
         return np.random.randint(1, 7), np.random.randint(1, 7)
     
     def perform_player_action(self):
-        print(f"###################################################")
-        self.board.print_board()
-        print(f"Player {self.current_player.backgammon_color} 's turn")
+        #self.board.print_board()
         roll1, roll2 = self.roll_dice()
         self.all_actions.append([len(self.all_actions), self.current_player.backgammon_color, "ROLL", [roll1, roll2], None, None, None])
         if roll1 == roll2:
             available_dice = [roll1, roll1, roll2, roll2]
         else:
             available_dice = [roll1, roll2]
-        print(f"    Available_dice: {available_dice}")
         while len(available_dice) > 0:
             moves = self.board.get_moves(self.current_player.backgammon_color, available_dice)
-            print(f"    Available Moves: {moves}")
             move = self.current_player.get_action(moves)
-            print(f"    Move: {move}")
             if move is not None:
                 self.board.perform_move(self.current_player.backgammon_color, move)
                 self.all_actions.append([len(self.all_actions), self.current_player.backgammon_color, [list(x) for x in self.board.board], list(self.board.bar), [roll1, roll2], move, [list(self.board.white_home), list(self.board.black_home)]])
@@ -46,8 +41,7 @@ class Game():
             if self.game_ended:
                 break
         self.current_player = self.get_player_by_color((self.current_player.backgammon_color + 1) % 2)
-        self.board.print_board()
-        print(f"###################################################")
+        #self.board.print_board()
         if self.game_ended:
             self.game_over()
     

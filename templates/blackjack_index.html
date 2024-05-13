@@ -54,10 +54,6 @@
             text-align: left;
         }
 
-        .tables {
-            width: 10%;
-            height: 100%;
-        }
 
         /* Hover effect for game elements */
         .game {
@@ -73,14 +69,70 @@
             justify-content: space-between; /* Distribute space between buttons */
             margin-bottom: 5px; /* Move this from .collapsible to .button-container */
         }
+        .flex-container {
+        display: flex;
+        }
+        .flex-container > div {
+        margin: 10px;
+        padding: 20px;
+        font-size: 30px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            color: #eee;
+            margin-bottom: 10px;
+        }
+        input[type="number"],
+        select {
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 2px solid #555;
+            background-color: #777;
+            color: #fff;
+            border-radius: 5px;
+        }
 
+        input[type="submit"] {
+            padding: 10px 20px;
+            background-color: #222;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #444;
+        }
+        .train {
+            width: 15%;
+            height: 100%;
+            border: 2px solid white;
+            
+            padding: 20px;
+        }
+        .tables {
+            width: 10%;
+            height: 100%;
+            border: 2px solid white;
+            padding: 20px;
+        }
     </style>
     <script src="{{ url_for('static', filename='index_script.js') }}", type="text/javascript"></script>
 </head>
 <body>
     {% include 'navbar.html' %}
+
+
 <h1>Blackjack index</h1>
+<div class="flex-container">
 <div class="tables">
+    <h2>Replay</h2>
+    <br>
 {% for table in tables %}
     <div class="button-container">
     <button class="collapsible" onclick="toggleTable('{{ table }}')">{{ table }}</button>
@@ -100,7 +152,24 @@
     </div>
 {% endfor %}
 </div>
-
+<div class="train">
+    <h2>Training</h2>
+    <br>
+    <form action="{{url_for('train_blackjack')}}", method="post">
+        <label for="table_n">Number of Tables:</label>
+        <input type="number" id="table_n" name="table_n"><br>
+        {% for i in range(6) %}
+        <label for="strategies_{{ i }}">Player {{ i }} Strategy:</label>
+        <select id="strategies_{{ i }}" name="strategies_{{ i }}">
+            <option value="random">Random</option>
+            <option value="gto">GTO</option>
+        </select>
+        {% endfor %}
+        <br>
+        <input type="submit" value="Submit">
+    </form>
+</div>
+</div>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
     // Get all game elements

@@ -29,6 +29,7 @@ class ConsumerThread(threading.Thread):
 
     def stop(self):
         self.running.clear()
+        self.enqueue_data({"stop": True}) 
 
     def run(self):
         self.running.set()

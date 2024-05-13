@@ -1,7 +1,6 @@
 import sys
 import os
-from .player import Player
-from .card import Card
+from Blackjack.game_logic.player import Player
 import numpy as np
 import json
 
@@ -72,18 +71,9 @@ class Game():
 
 
     def player_performed_action(self):
-        print(f"##########################################")
-        print(f"Plyer {self.current_player}'s turn")
-        print(list(self.player_list.keys()))
         player = self.player_list[self.current_player]
-        print(f"Hand before: {player.hands}")
         action = player.perform_action(self.player_hand_id)
         self.all_actions[player.player_id].append(action)
-        print(f"Player {self.current_player} performed action {action}")
-        print(f"Hand after: {player.hands}")
-        print(f"##########################################")
-
-
         if action.action_str == "Stand":
             self.player_hand_id += 1
             if len(player.hands) <= self.player_hand_id:
@@ -139,11 +129,7 @@ class Game():
     def game_over(self):
         self.dealers_turn()
         self.get_results()
-        self.print_cards()
-        print(f"________________")
-        print(f"Dealers cards: {self.dealers_cards}")
-        print(self.results)
-        print(f"________________")
+        #self.print_cards()
         self.game_ended = True
         if self.save_game:
             self.record_game()
@@ -173,9 +159,7 @@ class Game():
             hands = self.player_list[player_id].hands
             for hand_id in list(hands.keys()):
                 cards[player_id][hand_id] = []
-                #print(hands[hand_id])
                 for card in hands[hand_id]["Cards"]:
-                    #print(card)
                     cards[player_id][hand_id].append({"current_rank":card.current_rank, "current_suit":card.current_suit, "current_value":card.current_value})
         return cards
 
@@ -201,7 +185,6 @@ class Game():
         game_data['actions'] = self.parse_player_actions()
         game_data['bals'] = {'start_bal': self.start_bals, 'bets': self.bets}
         game_data['cards'] ={'dealer_cards': self.parse_dealer_cards(), 'player_cards': self.get_player_cards()}
-        print(game_data)
         if self.consumer_thread == None:
             with open(os.path.join(self.game_folder, f"game_data.json"), "w") as json_file:
                 json.dump(game_data, json_file)

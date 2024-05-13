@@ -51,12 +51,8 @@ class Game():
         
     
     def do_one_round(self):
-        #print(f"Starting this round: {self.current_player}")
-        #print(f"Ending this round: {self.trans_player}\n")
-
         while self.current_player != self.trans_player:
             action_performed = self.player_performed_action()
-
         action_performed = self.player_performed_action()
     
     def get_player_after_dealer(self):
@@ -76,7 +72,6 @@ class Game():
 
 
     def get_next_active_player(self, id):
-        print(list(self.player_list.keys()))
         lst = [0, 1, 2, 3, 4, 5]
         curr_idx = (lst.index(id) + 1) % len(lst)
         counter = 0
@@ -85,9 +80,6 @@ class Game():
             counter += 1
 
         return self.active_player_list[curr_idx]
-
-
-
 
     def get_next_player(self, id = None, use_standard_player_list = False, reverse = False):
         player_list = list(self.active_player_list.keys())
@@ -100,19 +92,14 @@ class Game():
         else: keyword = "after"
 
         if id is None:
-            #print(f"Finding player {keyword}: {self.current_player} - ", end="")
             curr_idx = player_list.index(self.current_player)
         else:
-            #print(f"Finding player {keyword}: {id} - ", end="")
-            curr_idx = player_list.index(id)
-        #print(player_list)
-        
+            curr_idx = player_list.index(id)        
         if reverse:
             res_player = player_list[(curr_idx - 1) % len(player_list)]
         else:
             res_player = player_list[(curr_idx + 1) % len(player_list)]
 
-        #print(f"Found {res_player}")
         return res_player
     
     def get_trans_player(self, dealer):
@@ -134,43 +121,30 @@ class Game():
         self.side_pots[player_id] = self.pot
         for p_id in list(self.player_list.keys()):
             self.side_pots[player_id] = round(self.side_pots[player_id] + min(self.player_list[p_id].current_money_on_table, amount), 2)
-            #self.side_pots[player_id] += min(self.player_list[p_id].current_money_on_table, amount)
     
     def update_active_side_pots(self, amount):
         for p_id in self.active_side_pots:
             if p_id not in list(self.side_pots.keys()):
                 self.side_pots[p_id] = round(self.pot + amount, 2)
-                
             else:
                 self.side_pots[p_id] = round(self.side_pots[p_id] + min(amount, self.player_list[p_id].current_money_on_table), 2)
-                #self.side_pots[p_id] += min(amount, self.player_list[p_id].current_money_on_table)
-        #if len(self.active_side_pots) > 0:
-        #    input(f"Sidepots?")
-    
 
     def player_performed_action(self):
         player_id = self.current_player
-        print(f"PLAYER TO PERFORM ACTION: {player_id}")
         next_player = self.get_next_player(player_id)
         previous_player = self.get_next_player(player_id, reverse=True)
-        print(f"Game state: {self.game_state}")
-        
         if self.game_state == "Showdown":
             return None
         
         max_currently_on_table = max([self.player_list[p_id].current_money_on_table for p_id in self.player_list])
         action = self.active_player_list[player_id].perform_action(self.somebody_raised, max_currently_on_table)
-        print(f"Action: {action}")
         if action is None:
             self.current_player = next_player
             return None
-
+        
         self.log_str += f"Player {player_id} performed action {action.action_str} ($ {action.bet_amount})\n"
-        print(f"Player {player_id} performed action {action.action_str} ($ {action.bet_amount})")
-
         if self.active_player_list[player_id].folded:
             self.active_player_list.pop(player_id)
-        
         
         if self.game_state in list(self.action_map.keys()):
             self.action_map[self.game_state].append(action)
@@ -189,8 +163,6 @@ class Game():
             self.somebody_raised = True
             self.trans_player = previous_player
             self.log_str += f"New Trans player: {self.trans_player} (in list: {list(self.active_player_list.keys())})\n"
-            print(f"New Trans player: {self.trans_player} (in list: {list(self.active_player_list.keys())})")
-
 
         if len(list(self.active_player_list.keys())) == 1 and self.player_list[player_id].folded:
             self.transition_state(showdown=True)
@@ -221,10 +193,8 @@ class Game():
         players = all_in_players + [self.active_player_list[p] for p in list(self.active_player_list.keys())]
 
         self.hand_evaluator.set_cards_on_table(self.cards_on_table)
-        #print([p.player_id for p in players])
         players = sorted(players, key=cmp_to_key(self.hand_evaluator.compare_players))
         player_groups = [[players[0]]]
-
         for p in players[1:]:
             compare_res = self.hand_evaluator.compare_players(p, player_groups[-1][-1])
             if compare_res == 0:
@@ -248,7 +218,6 @@ class Game():
         else:
             new_state = self.all_game_states[self.all_game_states.index(self.game_state) + 1 % len(self.all_game_states)]
         self.log_str += f"Game state transitioned from '{self.game_state}' to '{new_state}'\n"
-        print(f"Game {self.game_id} state transitioned from '{self.game_state}' to '{new_state}'")
         self.game_state = new_state
 
         if new_state in ["Flop", "Turn", "River"]:
@@ -258,31 +227,22 @@ class Game():
         for _,player in self.active_player_list.items():
             player_list.append(player)
         
-        self.stats.update_pot_odds(self.pot + self.current_pot, player_list)
+        #self.stats.update_pot_odds(self.pot + self.current_pot, player_list)
         if new_state == "Pre-flop":
             self.deal_hands()
-            #self.do_one_round()
 
         if new_state == "Flop":
             self.deal_table(3)
-            #self.do_one_round()
         
         if new_state == "Turn" or new_state == "River":
             self.deal_table(1)
-            #self.do_one_round()
         
         if new_state == "Showdown":
-           print(f"Currently on table: {self.cards_on_table}")
            self.deal_table(5 - len(self.cards_on_table))
            new_state = "Conclusion" 
             
         if new_state == "Conclusion":
             self.winner_arr = self.get_winner()
-
-            print(f"Winners:")
-            print(self.winner_arr)
-            print(f"Side pots: {self.side_pots}")
-            print(f"Total pot: {self.pot}")
 
             self.log_str += f"Winners:\n{self.winner_arr}\nSide pots: {self.side_pots}\nTotal pot: {self.pot}\n"
 
@@ -298,7 +258,6 @@ class Game():
                 for player in is_all_in:
                     to_add = round(min(self.side_pots[player.player_id] / len(winner_group), self.pot), 2)
                     self.log_str += f"Adding {to_add} to player {player.player_id}\n"
-                    print(f"Adding {to_add} to player {player.player_id}")
                     player.add_to_balance(to_add)
                     self.pot -= to_add
                     if self.pot == 0:
@@ -310,7 +269,6 @@ class Game():
                 for winner in is_not_all_in:
                     to_add = round(min(self.pot / len(is_not_all_in), self.pot), 2)
                     self.log_str += f"Adding {to_add} to player {winner.player_id}\n"
-                    print(f"Adding {to_add} to player {winner.player_id}")
                     winner.add_to_balance(to_add)
 
                 if len(is_not_all_in) > 0:
@@ -320,7 +278,6 @@ class Game():
         
         
     def deal_hands(self):
-        print(f"Dealing hands...")
         self.log_str += f"Dealing hands...\n"
         for player_id in list(self.player_list.keys()):
             player = self.player_list[player_id]
@@ -330,11 +287,7 @@ class Game():
                 self.active_player_list[player_id] = player
                 c = self.table.deck.draw_cards(2)
                 player.set_hand(c)
-                #for card in c:
-                #    self.stats.update_pov_count(card.current_rank, player.player_id)
                 self.log_str += f"  P {player_id}: {player.hand}\n"
-                print(f"  P {player_id}: {player.hand}")
-        #print(f"Hands dealt")
         
     
     def deal_table(self, amount):
@@ -344,14 +297,12 @@ class Game():
         for player in self.active_player_list:
             for card in c:
                 self.stats.update_pov_count(card.current_rank, player)
-        print(f"Dealing on table - {c}")
         self.log_str += f"Dealing on table - {c}\n"
         self.cards_on_table += c
     
     def game_over(self):
         self.game_ended = True
-        self.stats.print_stats()
-        #input()
+        #self.stats.print_stats()
         self.return_function()
 
         
@@ -366,7 +317,6 @@ class Game():
         for stage, actions in self.action_map.items():
             parsed_actions[stage] = []
             for action in actions:
-                print(action)
                 parsed_actions[stage].append([action.player_id, action.action_str, action.bet_amount])
 
         game_data['actions'] = parsed_actions
