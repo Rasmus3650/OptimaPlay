@@ -18,6 +18,7 @@ import plotly.graph_objs as go
 import pstats
 import cProfile
 import snakeviz
+sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 # def main2():
 #     vis = Visual_input()
 #     image = cv2.imread("./assets/img1.jpg")
@@ -255,6 +256,6 @@ def app_main():
 
 if __name__ == "__main__":
     profile_results_file = "optimization_logs/profile_results.prof"
-    #cProfile.run('main()', profile_results_file)
-    cProfile.run('app_main()', profile_results_file)
+    cProfile.run('main()', profile_results_file)
+    #cProfile.run('app_main()', profile_results_file)
     

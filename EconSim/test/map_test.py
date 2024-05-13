@@ -28,18 +28,21 @@ class ComplexEncoder(json.JSONEncoder):
 
 def map_test(consumer_thread):
     map = Map(200,200)
-    company1 = Company("1", None, 1)
-    company2 = Company("2", None, 1)
-    company3 = Company("3", None, 1)
+    company1 = Company("1", None, 1, map)
+    company2 = Company("2", None, 1, map)
+    company3 = Company("3", None, 1, map)
     drone1 = Drone(owner=company1)
     map.spawn_headquarters([company1, company2, company3])
     lumbermill = map.spawn_building("LumberMill", company1)
+    mine = map.spawn_building("Mine", company1)
     lumbermill.produce()
     lumbermill.produce()
-    lumbermill.produce()
-    lumbermill.produce()
-    drone1.transport(lumbermill, company1.buildings[0])
-    
+    mine.produce()
+    drone1.transport(lumbermill, company1.buildings["HQ"][0])
+    drone1.transport(lumbermill, company1.buildings["HQ"][0])
+    drone1.transport(mine, company1.buildings["HQ"][0])
+    company1.craft("Building", "LumberMill")
+    company1.place_building("LumberMill")
     #print(map)
     save = {}
     save['map'] = json.dumps(map.reprJSON(), cls=ComplexEncoder)

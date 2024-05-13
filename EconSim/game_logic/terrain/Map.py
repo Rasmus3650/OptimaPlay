@@ -1,114 +1,11 @@
 import random, uuid
 import numpy as np
 from opensimplex import OpenSimplex
+from .Tile import Tile
+from .Resource import Resource
+import sys, os
+from game_logic.Building import *
 
-
-class Resource():
-    def __init__(self, type, start_amount, regen_rate=0, extraction_rate = 1):
-
-        self.type = type
-        self.amount = start_amount # The amount of resource left in a given tile
-        self.regen_rate = regen_rate
-        self.extraction_rate = extraction_rate
-
-        self.renewable = type in ["Wood", "Food", "Water"]
-
-    def regenerate(self):
-        if self.renewable:
-            self.amount += self.regen_rate
-
-    def extract(self):
-        if self.amount > 0:
-            to_extract = min(self.extraction_rate, self.amount)
-            self.amount -= to_extract
-            #TODO Add this resource to the company's inventory
-        else:
-            to_extract = 0
-        return to_extract
-
-    def reprJSON(self):
-        return dict(type=self.type, amount=self.amount, renewable=self.renewable, extractionRate=self.extraction_rate, regenRate=self.regen_rate)
-
-
-class Building():
-    def __init__(self, type, owner, x, y, level=1, max_storage=100) -> None:
-        self.type = type
-        self.owner = owner
-        self.level = level
-        self.max_storage = max_storage
-        self.storage = 0
-        self.production_rate = 10 * level
-        self.x = x
-        self.y = y
-
-    def produce(self):
-        self.storage += self.production_rate
-    
-    def reprJSON(self):
-        return dict(type=self.type, owner=self.owner, level=self.level, storage=self.storage, max_storage=self.max_storage, production_rate=self.production_rate)
-
-    def upgrade(self):
-        self.level += 1
-        self.production_rate = 10 * self.level
-
-
-
-
-class LumberMill(Building):
-    def __init__(self, owner, x, y, level=1):
-        super().__init__("LumberMill", owner, level)
-        self.production_rate = 10 * level
-
-    # def produce(self):
-    #     self.storage += self.production_rate
-    #     #return {"Wood": self.production_rate}
-
-    def reprJSON(self):
-        parent_dict = super().reprJSON()
-        #parent_dict.update({"production_rate": self.production_rate})
-        return parent_dict
-
-
-class Mine(Building):
-    def __init__(self, owner, x, y,  level=1):
-        super().__init__("Mine", owner, level)
-        self.production_rate = 10 * level
-
-    # def produce(self):
-    #     self.storage += self.production_rate
-    #     return {"Iron": self.production_rate}
-
-    def reprJSON(self):
-        parent_dict = super().reprJSON()
-        #parent_dict.update({"production_rate": self.production_rate})
-        return parent_dict
-    
-
-class Farm(Building):
-    def __init__(self, owner, x, y,  level=1):
-        super().__init__("Farm", owner, level)
-        self.production_rate = 10 * level
-
-    # def produce(self):
-    #     return {"Food": self.production_rate}
-    
-    def reprJSON(self):
-        parent_dict = super().reprJSON()
-        #parent_dict.update({"production_rate": self.production_rate})
-        return parent_dict
-
-class Tile():
-    def __init__(self, biome, resources):
-        self.biome = biome
-        self.resources = resources
-        self.entities = {}      # All living entities (workers?) residing in a cell
-        self.building = None    # Hold information about the building on a cell, if there is one
-
-    def place_building(self, building):
-        self.building = building
-    
-    def reprJSON(self):
-        return dict(biome=self.biome, resources=self.resources, entities=self.entities, building=self.building)
 
 class Map():
     def __init__(self, width, height, seed=None):
@@ -118,15 +15,12 @@ class Map():
         if seed == None:
             self.seed = self.generate_seed()
 
-
-
         self.map = self.generate_world()
         self.all_biomes = ['Forest', 'Mountain', 'Plains', 'Beach', 'Ocean']
         self.all_resources = ['Wood', 'Water', 'Stone', 'Iron', 'Food']
         self.biome_to_building_map = {"Forest": "LumberMill", "Mountain": "Mine"}
         self.building_to_biome_map = {"LumberMill": "Forest", "Mine": "Mountain"}
-        
-    
+        self.building_map = {"LumberMill": LumberMill, "Mine": Mine, "Farm": Farm, "HQ": Building}
     
     def generate_seed(self):
         return (uuid.uuid1().int >> 64)
@@ -183,8 +77,8 @@ class Map():
                 random_column = random.randint(0, self.width - 1)
             build = Building("HQ", company, random_column, random_row)
             self.map[random_row][random_column].place_building(build)
-            company.buildings.append(build)
-            print(f"Spawning HQ at {random_row}, {random_column}")
+            company.buildings["HQ"] = [build]
+            print(f"Spawning company {company.company_name}'s HQ at {random_row}, {random_column}")
     
     def spawn_building(self, building_type, owner):
         target_biome = self.building_to_biome_map[building_type]
@@ -193,7 +87,7 @@ class Map():
         while self.map[random_row][random_column].biome != target_biome:
             random_row = random.randint(0, self.height - 1)
             random_column = random.randint(0, self.width - 1)
-        to_build = Building(building_type, owner, random_column, random_row)
+        to_build = self.building_map[building_type](building_type, owner, random_column, random_row)
         self.map[random_row][random_column].place_building(to_build)
         print(f"Spawning {building_type} at {random_row}, {random_column}")
         return to_build
