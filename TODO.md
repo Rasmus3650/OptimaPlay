@@ -4,7 +4,8 @@
 [ ] Identify bottlenecks with multi-threading using GILView and snakeviz <br>
 [ ] Create the Model Interface<br>
 [ ] Implement greedy strategy (André) <br>
-[ ] Add a requirements.txt to ensure we all have the same packages and versions
+[ ] Add a requirements.txt to ensure we all have the same packages and versions<br>
+[ ] FIX: Blackjack can't record tables when there is 1 saved already
 # Non-Essential<br>
 [ ] Collect Visual data<br>
 [ ] Instantiate relevant objects with data from the visual module<br>

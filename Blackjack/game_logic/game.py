@@ -120,7 +120,7 @@ class Game():
         self.upcard_revealed = True
         dealer_value = self.get_dealer_value()
 
-        while dealer_value[0] < 17:
+        while dealer_value[0] < 17 and dealer_value[1] < 17:
             self.dealers_cards.append(self.table.deck.draw_cards(1)[0])
             dealer_value = self.get_dealer_value()
 

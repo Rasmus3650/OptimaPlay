@@ -166,7 +166,7 @@ def replay_blackjack(table, game):
     redirect_param = request.args.get('redirect')
     redirect_arg = True if redirect_param and redirect_param.lower() == 'true' else False
     png_file_names = [x for x in list(os.walk("static"))[0][2] if x[-2:] != "js"]
-    game_folder = os.path.join(os.path.join(os.path.join(os.getcwd(), "Blackjack/recorded_tables"), f"{table}"), f"{game}")
+    game_folder = os.path.join(os.path.join(os.path.join(os.getcwd(), "Blackjack\\recorded_tables"), f"{table}"), f"{game}")
     if not os.path.exists(game_folder):
         return redirect("/")
     json_data = {}
