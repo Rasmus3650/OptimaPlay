@@ -2,8 +2,8 @@ from .game import Game
 from .deck import Deck
 from .player import Player
 import os
-from Blackjack.Strategies.GTO_strategy import GTO_strategy
-from Blackjack.Strategies.random_strategy import Random_strategy
+from Poker.Strategies.GTO_strategy import GTO_strategy
+from Poker.Strategies.random_strategy import Random_strategy
 
 class Table():
     def __init__(self, start_balance: float, table_id: int, save_table = True, record_folder_path = "Poker/recorded_tables/", play_untill_1_winner = True, consumer_thread=None) -> None:

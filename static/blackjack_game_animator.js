@@ -1,6 +1,6 @@
 var canvas, ctx, img, fps, interval, globalscale;
-var player_card_positions, card_offset, player_data_positions, player_bet_positions, dealer_card_positions, action_text_positions, hand_offset,card_width_offset;
-var player_data, cross_img, curr_action_idx, curr_action_subcounter, action_list, loaded_player_card_dict, loaded_dealer_cards_list, dealer_cards, game_done;
+var player_card_positions, card_offset, player_data_positions, player_bet_positions, dealer_card_positions, action_text_positions, hand_offset,card_width_offset, player_actions, action_map;
+var player_data, cross_img, curr_action_idx, curr_action_subcounter, action_list, loaded_player_card_dict, loaded_dealer_cards_list, dealer_cards, game_done, loaded_backside_card, p_card_amount;
 var xscale, yscale, og_card_width, og_card_height, new_card_width, new_card_height, bigfont, mediumfont, smallfont, player_data_offset;
 window.onload = (event) => {
     canvas = document.getElementById("myCanvas");
@@ -16,9 +16,17 @@ window.onload = (event) => {
     cross_img = new Image();
     cross_img.src = "/static/misc/cross.png";
 
+    loaded_backside_card = new Image();
+    loaded_backside_card.src = "/static/Cards/backside.png";
+
     cards_on_table = 0;
 
     game_done = false;
+
+    player_actions = ["", "", "", "", "", ""]
+    action_map = {"Stand": "S", "Hit": "H", "Split": "SP", "Double": "D"}
+
+    display_cards = [[2], [2], [2], [2], [2], [2]]
 
     fps=2;
     var fpsSlider = document.getElementById("fpsSlider");
@@ -131,11 +139,8 @@ function change_scale(scale, firstcall = false) {
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     if (firstcall == false) {
         draw_player_cards(loaded_player_card_dict);
-        draw_dealer_cards();
+        draw_dealer_cards(1);
         draw_players_data();
-        draw_current_bets();
-        draw_folded();
-        draw_cards_on_table();
     }
     
 }
@@ -181,9 +186,10 @@ function load_cards(player_cards, dealer_cards) {
 
 function set_bals(bals_dict) {
     var start_bals = bals_dict["start_bal"]
+    var bets = bals_dict["bets"]
     var p_keys = Object.keys(start_bals);
     for (var i = 0; i < p_keys.length; i++) {
-        player_data[p_keys[i]] = {"bal": start_bals[p_keys[i]]};
+        player_data[p_keys[i]] = {"bal": Math.round(((parseFloat(start_bals[p_keys[i]]) - parseFloat(bets[p_keys[i]])) + Number.EPSILON) * 100) / 100, "bet": bets[p_keys[i]]};
     }
 }
 
@@ -249,10 +255,10 @@ function draw_player_cards(p_card_dict) {
         var hand_ids = Object.keys(p_card_dict[keys[i]])
         console.log("PLAYER: " + keys[i])
         console.log(hand_ids)
-        for (var hand_id = 0; hand_id < hand_ids.length; hand_id++) {
+        for (var hand_id = 0; hand_id < display_cards[keys[i]].length; hand_id++) {
             console.log("    HAND ID: " + hand_id)
             console.log("    Hand: " + p_card_dict[keys[i]][hand_id])
-            for (var j = 0; j < p_card_dict[keys[i]][hand_id].length; j++) {
+            for (var j = 0; j < display_cards[keys[i]][hand_id]; j++) {
                 console.log("    j: " + j)
                 var x = parseInt(player_card_positions[keys[i]][0]) + parseInt(hand_id) * hand_offset;
                 var y = parseInt(player_card_positions[keys[i]][1]) + parseInt(j) * card_offset;
@@ -278,47 +284,29 @@ function draw_players_data() {
         var x_bal = parseInt(player_data_positions[keys[i]][0])
         var y_bal = parseInt(player_data_positions[keys[i]][1]+player_data_offset)
         ctx.fillText(player_data[keys[i]]["bal"] + " $", x_bal, y_bal)
+        ctx.font = "900 " + mediumfont + "px Arial";
+        ctx.fillStyle = "red"; 
+        ctx.fillText(player_data[keys[i]]["bet"] + " $", player_data_positions[keys[i]][0], player_data_positions[keys[i]][1] + 75)
     }
 }
 
 
-function draw_dealer_cards() {
-    for (var i = 0; i < loaded_dealer_cards_list.length; i++) {
-        ctx.drawImage(loaded_dealer_cards_list[i], dealer_card_positions[0]+i*card_width_offset, dealer_card_positions[1], new_card_width, new_card_height);
+function draw_dealer_cards(amount) {
+    
+    if (amount == 1) {
+        var face_up_card = loaded_dealer_cards_list[0]
+        ctx.drawImage(face_up_card, dealer_card_positions[0], dealer_card_positions[1], new_card_width, new_card_height);
+        ctx.drawImage(loaded_backside_card, dealer_card_positions[0] + card_width_offset, dealer_card_positions[1], new_card_width, new_card_height);
+    } else {
+        for (var i = 0; i < amount; i++) {
+            ctx.drawImage(loaded_dealer_cards_list[i], dealer_card_positions[0]+i*card_width_offset, dealer_card_positions[1], new_card_width, new_card_height);
+        }
     }
 }
 
-
-function draw_current_bets() {
-    var p_ids = Object.keys(player_data);
-    ctx.font = smallfont + "px Arial";
-    ctx.fillStyle = "white"; 
-    for (var i = 0; i < p_ids.length; i++) {
-        ctx.fillText(player_data[p_ids[i]]["curr_bet"] + " $", player_bet_positions[p_ids[i]][0], player_bet_positions[p_ids[i]][1]);
-    }
-}
-
-function display_action(action) {
-    ac_str = action[1];
-    if (action[2] > 0.0) {
-        ac_str += " " + action[2] + " $";
-    }
-    ctx.font = "bold " + smallfont + "px Arial";
-    ctx.fillStyle = "green"; 
-    ctx.fillText(ac_str, action_text_positions[action[0]][0], action_text_positions[action[0]][1]);
-}
 
 function draw_cross(player_id){
     ctx.drawImage(cross_img, player_card_positions[player_id][0], player_card_positions[player_id][1], cross_img.width * (globalscale / 100), cross_img.height * (globalscale / 100));
-}
-
-function draw_folded() {
-    var p_ids = Object.keys(player_data);
-    for (var i = 0; i < p_ids.length; i++) {
-        if (player_data[p_ids[i]]["folded"]) {
-            draw_cross(p_ids[i]);
-        }
-    }
 }
 
 
@@ -361,6 +349,14 @@ function redirect_to_next_game(game){
     }
 }
 
+function draw_player_actions() {
+    ctx.fillStyle = "red";
+    ctx.font = bigfont + "px Arial";
+    for (var i = 0; i < player_actions.length; i++) {
+        ctx.fillText(player_actions[i], player_data_positions[i][0] + 10, player_data_positions[i][1] - 50);
+    }
+}
+
 function end_game() {
     clearInterval(interval);
     var redirect = get_redirect();
@@ -378,7 +374,29 @@ function animate() {
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     draw_player_cards(loaded_player_card_dict);
     draw_players_data();
-    draw_dealer_cards();
+    draw_dealer_cards(1);
+    action = action_list[curr_action_idx];
+    print(action, "action")
+    if (player_actions[action.player_id].length == 0) {
+        player_actions[action.player_id] += action_map[action.action_str]
+    } else {
+        player_actions[action.player_id] += ", " + action_map[action.action_str]
+    }
+
+    draw_player_actions();
+
+    
+    if (action.action_str == "Double") {
+        display_cards[action.player_id][action.hand_id] += 1
+    }
+    if (action.action_str == "Hit") {
+        display_cards[action.player_id][action.hand_id] += 1
+    }
+    if (action.action_str == "Split") {
+        display_cards[action.player_id].append(2)
+    }
+    curr_action_idx += 1
+
     
     //draw_current_bets();
     //draw_folded();

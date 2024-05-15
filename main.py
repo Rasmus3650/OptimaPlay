@@ -108,8 +108,14 @@ def backgammon_index():
 
 @app.route('/econsim')
 def econsim_index():
-    games_dict = "EconSim/game_save/game_data.json"
-    return render_template("econsim_index.html", games=games_dict)
+    if not os.path.exists("EconSim/recorded_tables"):
+        os.mkdir("EconSim/recorded_tables")
+    tables = sorted(list(os.walk("EconSim/recorded_tables"))[0][1], key=lambda x: int(x.split('_')[1]))
+    games_dict = {}
+    for table in tables:
+        games = sorted(list(os.walk(os.path.join("EconSim/recorded_tables", table)))[0][1], key=lambda x: int(x.split('_')[1]))
+        games_dict[table] = games
+    return render_template("econsim_index.html", tables=tables, games=games_dict)
 
 @app.route('/poker/<table>')
 def poker_table_index(table):
@@ -239,10 +245,10 @@ def main():
 
     consumer_thread = ConsumerThread()
     consumer_thread.start()
-    start_training(tables=5, consumer_thread=consumer_thread)
+    # start_training(tables=5, consumer_thread=consumer_thread)
     # train_blackjack(consumer_thread, verbose=True)
     # train_backgammon(consumer_thread, verbose=True)
-    # map_test(consumer_thread)
+    map_test(consumer_thread)
     consumer_thread.stop()
     consumer_thread.join()
 

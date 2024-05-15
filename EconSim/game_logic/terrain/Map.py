@@ -35,8 +35,8 @@ class Map():
             result['Food'] = Resource('Food', 200)
         elif biome == "Mountain":
             result['Stone'] = Resource('Stone', 1000)
-            if random.random() >= 0.5:
-                result['Iron'] = Resource('Iron', 250)
+            #if random.random() >= 0.5:
+            result['Iron'] = Resource('Iron', 250)
         elif biome == "Plains":
             result['Food'] = Resource('Food', 500)
             result['Wood'] = Resource('Wood', 500)
@@ -75,7 +75,7 @@ class Map():
             while self.map[random_row][random_column].biome == "Ocean":
                 random_row = random.randint(0, self.height - 1)
                 random_column = random.randint(0, self.width - 1)
-            build = Building("HQ", company, random_column, random_row)
+            build = Building("HQ", company, random_column, random_row, self.map[random_row][random_column])
             self.map[random_row][random_column].place_building(build)
             company.buildings["HQ"] = [build]
             print(f"Spawning company {company.company_name}'s HQ at {random_row}, {random_column}")
@@ -87,7 +87,7 @@ class Map():
         while self.map[random_row][random_column].biome != target_biome:
             random_row = random.randint(0, self.height - 1)
             random_column = random.randint(0, self.width - 1)
-        to_build = self.building_map[building_type](building_type, owner, random_column, random_row)
+        to_build = self.building_map[building_type](owner, random_column, random_row, self.map[random_row][random_column])
         self.map[random_row][random_column].place_building(to_build)
         print(f"Spawning {building_type} at {random_row}, {random_column}")
         return to_build

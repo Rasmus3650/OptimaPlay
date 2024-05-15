@@ -52,6 +52,7 @@ class Company():
         pass
 
     def place_building(self, building_name): #Tænker der skal x, y som parametre her på et tidspunkt
+        self.inventory.remove_items(building_name, 1)
         self.map.spawn_building(building_name, self)
 
     def craft(self, category, item_name):

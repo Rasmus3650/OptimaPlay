@@ -9,10 +9,7 @@ class Drone():
         self.inventory = Inventory()
         self.capacity = 10 * self.level
     
-    def transport(self, start_building, end_building, item = None):
-        if item is None:
-            if start_building.resource_prod is not None:
-                item = start_building.resource_prod
+    def transport(self, start_building, end_building, item):
         start_amount = start_building.inventory.get_item_amount(item)
         if start_amount == 0:
             print(f"Drone from company {self.owner.company_name} couldn't transport {item} from building {start_building}")

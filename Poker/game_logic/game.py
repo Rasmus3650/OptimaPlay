@@ -8,7 +8,7 @@ from .card import Card
 import numpy as np
 from .hand_evaluator import Hand_Evaluator
 from functools import cmp_to_key
-from Input.statistics import PokerStatistics
+from Poker.Input.statistics import PokerStatistics
 
 
 class Game():

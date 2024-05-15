@@ -2,8 +2,8 @@ from .card import Card
 from .player_action import Player_Action
 import os, sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from Blackjack.Strategies.random_strategy import Random_strategy
-from Blackjack.Strategies.GTO_strategy import GTO_strategy
+from Poker.Strategies.random_strategy import Random_strategy
+from Poker.Strategies.GTO_strategy import GTO_strategy
 
 
 class Player():
