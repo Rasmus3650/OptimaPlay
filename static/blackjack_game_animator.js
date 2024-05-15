@@ -1,8 +1,8 @@
 var canvas, ctx, img, fps, interval, globalscale;
 var player_card_positions, card_offset, player_data_positions, player_bet_positions, dealer_card_positions, action_text_positions, hand_offset,card_width_offset, player_actions, action_map;
 var player_data, cross_img, curr_action_idx, curr_action_subcounter, action_list, loaded_player_card_dict, loaded_dealer_cards_list, dealer_cards, game_done, loaded_backside_card, p_card_amount;
-var xscale, yscale, og_card_width, og_card_height, new_card_width, new_card_height, bigfont, mediumfont, smallfont, player_data_offset, results;
-var dealer_counter
+var xscale, yscale, og_card_width, og_card_height, new_card_width, new_card_height, bigfont, mediumfont, smallfont, player_data_offset, results, card_count, all_player_cards;
+var dealer_counter;
 window.onload = (event) => {
     canvas = document.getElementById("myCanvas");
     ctx = canvas.getContext("2d");
@@ -28,6 +28,7 @@ window.onload = (event) => {
     action_map = {"Stand": "S", "Hit": "H", "Split": "SP", "Double": "D"}
 
     display_cards = [[2], [2], [2], [2], [2], [2]]
+    card_count = [[0], [0], [0], [0], [0], [0]]
 
     fps=2;
     var fpsSlider = document.getElementById("fpsSlider");
@@ -160,22 +161,27 @@ function start_animation(fps) {
 }
 
 function load_cards(player_cards, dealer_cards) {
+    all_player_cards = {};
     loaded_player_card_dict = {};
     loaded_dealer_cards_list = [];
     var p_keys = Object.keys(player_cards);
     for (var i = 0; i < p_keys.length; i++) {
         var p_id = p_keys[i]
         loaded_player_card_dict[p_id] = {}
+        all_player_cards[p_id] = {}
         var hands_dict = player_cards[p_id]
         var hand_amount = Object.keys(hands_dict).length
         for (var hand_id = 0; hand_id < hand_amount; hand_id++) {
             var temp_hand_lst = []
+            var temp_val_lst = []
             var cards_on_hand = hands_dict[hand_id].length
             for (var card_id = 0; card_id < cards_on_hand; card_id++) {
+                temp_val_lst.push(player_cards[p_id][hand_id][card_id]["current_rank"])
                 temp_hand_lst.push(new Image())
                 temp_hand_lst[temp_hand_lst.length - 1].src = "/static/Cards/" + get_card_filename([player_cards[p_id][hand_id][card_id]["current_rank"], player_cards[p_id][hand_id][card_id]["current_suit"]])
             }
             loaded_player_card_dict[p_id][hand_id] = temp_hand_lst
+            all_player_cards[p_id][hand_id] = temp_val_lst
         }
     }
 
@@ -254,6 +260,7 @@ function get_card_filename(card) {
 function draw_player_cards(p_card_dict) {
     var keys = Object.keys(p_card_dict);
     console.log("DRAWING PLAYER CARDS (" + keys + ")")
+    //card_count = [[0], [0], [0], [0], [0], [0]]
     for (var i = 0; i < keys.length; i++) {
         var hand_ids = Object.keys(p_card_dict[keys[i]])
         console.log("PLAYER: " + keys[i])
@@ -261,6 +268,8 @@ function draw_player_cards(p_card_dict) {
         for (var hand_id = 0; hand_id < display_cards[keys[i]].length; hand_id++) {
             console.log("    HAND ID: " + hand_id)
             console.log("    Hand: " + p_card_dict[keys[i]][hand_id])
+            var sum_str = ""
+            var sum_int = [0, 0]
             for (var j = 0; j < display_cards[keys[i]][hand_id]; j++) {
                 console.log("    j: " + j)
                 var x = parseInt(player_card_positions[keys[i]][0]) + parseInt(hand_id) * hand_offset;
@@ -268,6 +277,20 @@ function draw_player_cards(p_card_dict) {
                 console.log("    AT (" + x + "," + y + ")")
                 console.log(p_card_dict[keys[i]][hand_id][j])
                 ctx.drawImage(p_card_dict[keys[i]][hand_id][j], x, y, new_card_width, new_card_height);
+                var c = parseInt(all_player_cards[keys[i]][hand_id][j])
+                if (c == 11) {
+                    sum_int[0] += 11
+                    sum_int[1] += 1
+                } else {
+                    sum_int[0] += c
+                    sum_int[1] += c
+                }
+            }
+            if (sum_int[0] != sum_int[1]) {
+                
+                ctx.fillText("" + sum_int[0] + "/" + sum_int[1], player_data_positions[keys[i]][0]+(100 * (globalscale / 100)), player_data_positions[keys[i]][1])
+            } else {
+                ctx.fillText(sum_int[0].toString(), player_data_positions[keys[i]][0]+(100 * (globalscale / 100)), player_data_positions[keys[i]][1])
             }
         }
     }
@@ -390,7 +413,7 @@ function animate() {
     } else if (curr_action_idx > action_list.length + loaded_dealer_cards_list.length){
         draw_results()
     }
-    draw_dealer_cards(dealer_counter)
+    draw_dealer_cards(dealer_counter);
 
     if(curr_action_idx < action_list.length){
         action = action_list[curr_action_idx];
