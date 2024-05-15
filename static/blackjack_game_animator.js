@@ -1,7 +1,8 @@
 var canvas, ctx, img, fps, interval, globalscale;
 var player_card_positions, card_offset, player_data_positions, player_bet_positions, dealer_card_positions, action_text_positions, hand_offset,card_width_offset, player_actions, action_map;
 var player_data, cross_img, curr_action_idx, curr_action_subcounter, action_list, loaded_player_card_dict, loaded_dealer_cards_list, dealer_cards, game_done, loaded_backside_card, p_card_amount;
-var xscale, yscale, og_card_width, og_card_height, new_card_width, new_card_height, bigfont, mediumfont, smallfont, player_data_offset;
+var xscale, yscale, og_card_width, og_card_height, new_card_width, new_card_height, bigfont, mediumfont, smallfont, player_data_offset, results;
+var dealer_counter
 window.onload = (event) => {
     canvas = document.getElementById("myCanvas");
     ctx = canvas.getContext("2d");
@@ -20,7 +21,7 @@ window.onload = (event) => {
     loaded_backside_card.src = "/static/Cards/backside.png";
 
     cards_on_table = 0;
-
+    dealer_counter = 1
     game_done = false;
 
     player_actions = ["", "", "", "", "", ""]
@@ -211,6 +212,8 @@ function load_data() {
     set_bals(json_data['bals']);
     create_action_list(json_data['actions']);
     load_cards(json_data['cards']['player_cards'],json_data['cards']['dealer_cards'])
+    results = json_data['result']
+    console.log(results)
 }
 
 function animation_is_running() {
@@ -292,22 +295,19 @@ function draw_players_data() {
 
 
 function draw_dealer_cards(amount) {
-    
     if (amount == 1) {
         var face_up_card = loaded_dealer_cards_list[0]
         ctx.drawImage(face_up_card, dealer_card_positions[0], dealer_card_positions[1], new_card_width, new_card_height);
         ctx.drawImage(loaded_backside_card, dealer_card_positions[0] + card_width_offset, dealer_card_positions[1], new_card_width, new_card_height);
     } else {
         for (var i = 0; i < amount; i++) {
-            ctx.drawImage(loaded_dealer_cards_list[i], dealer_card_positions[0]+i*card_width_offset, dealer_card_positions[1], new_card_width, new_card_height);
+            if(i < loaded_dealer_cards_list.length){
+                ctx.drawImage(loaded_dealer_cards_list[i], dealer_card_positions[0]+i*card_width_offset, dealer_card_positions[1], new_card_width, new_card_height);
+            }
         }
     }
 }
 
-
-function draw_cross(player_id){
-    ctx.drawImage(cross_img, player_card_positions[player_id][0], player_card_positions[player_id][1], cross_img.width * (globalscale / 100), cross_img.height * (globalscale / 100));
-}
 
 
 function do_action(action) {
@@ -368,36 +368,56 @@ function end_game() {
         redirect_to_next_game(newgame);
     }
 }
+function draw_results(){
+    keys = Object.keys(results)
+    subKeyOffset = 25
+    for(var i = 0; i < keys.length; i++){
+        subKeys = Object.keys(results[keys[i]])
+        for(var j=0; j < subKeys.length; j++){
+            ctx.fillText(results[keys[i]][subKeys[j]],player_data_positions[i][0], (player_data_positions[i][1] - 100)+(j*subKeyOffset))
+        }
+    }
+}
 
 function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     draw_player_cards(loaded_player_card_dict);
     draw_players_data();
-    draw_dealer_cards(1);
-    action = action_list[curr_action_idx];
-    print(action, "action")
-    if (player_actions[action.player_id].length == 0) {
-        player_actions[action.player_id] += action_map[action.action_str]
-    } else {
-        player_actions[action.player_id] += ", " + action_map[action.action_str]
-    }
-
-    draw_player_actions();
-
     
-    if (action.action_str == "Double") {
-        display_cards[action.player_id][action.hand_id] += 1
+    if(curr_action_idx > action_list.length && curr_action_idx <= action_list.length + loaded_dealer_cards_list.length){
+        dealer_counter += 1
+    } else if (curr_action_idx > action_list.length + loaded_dealer_cards_list.length){
+        draw_results()
     }
-    if (action.action_str == "Hit") {
-        display_cards[action.player_id][action.hand_id] += 1
-    }
-    if (action.action_str == "Split") {
-        display_cards[action.player_id].append(2)
-    }
-    curr_action_idx += 1
+    draw_dealer_cards(dealer_counter)
 
+    if(curr_action_idx < action_list.length){
+        action = action_list[curr_action_idx];
+        print(action, "action")
     
+        
+    
+        if (player_actions[action.player_id].length == 0) {
+            player_actions[action.player_id] += action_map[action.action_str]
+        } else {
+            player_actions[action.player_id] += ", " + action_map[action.action_str]
+        }
+    
+        draw_player_actions();
+    
+        
+        if (action.action_str == "Double") {
+            display_cards[action.player_id][action.hand_id] += 1
+        }
+        if (action.action_str == "Hit") {
+            display_cards[action.player_id][action.hand_id] += 1
+        }
+        if (action.action_str == "Split") {
+            display_cards[action.player_id].push(2)
+        }     
+    }
+    curr_action_idx += 1 
     //draw_current_bets();
     //draw_folded();
     //draw_cards_on_table();

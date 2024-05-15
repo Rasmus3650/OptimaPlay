@@ -185,6 +185,7 @@ class Game():
         game_data['actions'] = self.parse_player_actions()
         game_data['bals'] = {'start_bal': self.start_bals, 'bets': self.bets}
         game_data['cards'] ={'dealer_cards': self.parse_dealer_cards(), 'player_cards': self.get_player_cards()}
+        game_data['result'] = self.results
         if self.consumer_thread == None:
             with open(os.path.join(self.game_folder, f"game_data.json"), "w") as json_file:
                 json.dump(game_data, json_file)
