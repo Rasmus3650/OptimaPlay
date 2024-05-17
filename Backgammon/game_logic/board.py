@@ -49,11 +49,11 @@ class Board():
         if player == 0:
             for dice in available_dice:
                 if not self.is_blocked(player, 24 - dice):
-                    moves.append(["BAR", 24 - dice, dice])
+                    moves.append([30, 24 - dice, dice])
         if player == 1:
             for dice in available_dice:
                 if not self.is_blocked(player, dice - 1):
-                    moves.append(["BAR", dice - 1, dice])
+                    moves.append([30, dice - 1, dice])
         return moves
 
 
@@ -88,7 +88,7 @@ class Board():
                 
     def perform_move(self, player, move):
         start, stop, steps = move
-        if start == "BAR":
+        if start == 30:
             chip = player
             self.bar.remove(player)
         else:

@@ -8,10 +8,11 @@ class Player():
         self.is_us = is_us
         self.strategy = strategy()
         self.backgammon_color = -1
+        self.sentient = False
 
     def set_color(self, color):
         self.backgammon_color = color
     
-    def get_action(self, moves):
+    def compute_action(self, moves):
         return self.strategy.compute_action(moves)
     

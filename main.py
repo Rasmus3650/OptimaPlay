@@ -237,18 +237,23 @@ def train_backgammon():
     print(f"Total time: {run_time}\nAvg. Time Per Table: {run_time / number_of_tables}")
     return redirect("/backgammon")
 
-
-
+def local_training(game, number_of_tables):
+    if game == "Backgammon":
+        start_time = time.time()
+        BackgammonTraining(number_of_tables, consumer_thread, strategies=["random", "random", "random", "random", "random", "random"])
+        end_time = time.time()
+        run_time = end_time - start_time
+        print(f"Total time: {run_time}\nAvg. Time Per Table: {run_time / number_of_tables}")
 
 
 def main():
-
+    global consumer_thread
     consumer_thread = ConsumerThread()
     consumer_thread.start()
     # start_training(tables=5, consumer_thread=consumer_thread)
     # train_blackjack(consumer_thread, verbose=True)
-    # train_backgammon(consumer_thread, verbose=True)
-    map_test(consumer_thread)
+    train_backgammon()
+    # map_test(consumer_thread)
     consumer_thread.stop()
     consumer_thread.join()
 
@@ -264,7 +269,8 @@ def app_main():
     consumer_thread.join()
 
 if __name__ == "__main__":
-    profile_results_file = "optimization_logs/profile_results.prof"
+    #profile_results_file = "optimization_logs/profile_results.prof"
     #cProfile.run('main()', profile_results_file)
-    cProfile.run('app_main()', profile_results_file)
+    #cProfile.run('app_main()', profile_results_file)
+    main()
     

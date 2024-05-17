@@ -21,7 +21,7 @@ class BackgammonTraining():
                 self.table_list[table].player_joined(strategies[i])
             self.table_list[table].start_game()
             
-        consumer_thread.enqueue_data({"stop": True}) 
+        #consumer_thread.enqueue_data({"stop": True}) 
 
 
 

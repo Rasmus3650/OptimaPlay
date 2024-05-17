@@ -1,5 +1,5 @@
-from agent import PokerAgent
-from Poker.game_logic.table import Table
+from agent import BackgammonAgent
+from Backgammon.game_logic.table import Table 
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -17,6 +17,48 @@ class NeuralNetwork(nn.Module):
         x = nn.ELU(self.fc2(x))
         x = self.fc3(x)
         return x
+
+class Environment:
+    def __init__(self) -> None:
+        self.env = "Backgammon"
+        self.agent_map = self.spawn_agents(2)
+
+    def train(self, num_episodes):
+        for i in range(num_episodes):
+            table = Table(i, self.agent_map)
+            table.play_game()
+        self.update_agents()
+
+    def update_agents(self):
+        pass
+
+    def spawn_agents(self, number_of_agents):
+        return {i:BackgammonAgent() for i in range(number_of_agents)}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class RLModel():
@@ -37,12 +79,14 @@ class RLModel():
         for epoch in range(self.max_epochs):
             # Setup for training
             # Spawn agents and setup environment
+            counter = 0
             for i in self.batch_size:
-                agents = self.spawn_agents(6)
 
                 # Agents needs to extend the Player class, so we can give it as input to the Table
                 for j in range(self.batch_iterations):
-                    table = Table(1000,j)
+                    agent_map = self.spawn_agents(2)
+                    table = Table(counter, agent_map)
+                    counter += 1
                     
                 # Save the best Agents  (most frequent Table winner) for each Table
                 # Play the best agents against each other
@@ -53,4 +97,4 @@ class RLModel():
         self.compute_loss()
 
     def spawn_agents(self, number_of_agents):
-        return [PokerAgent() for _ in range(number_of_agents)]
+        return {i:BackgammonAgent() for i in range(number_of_agents)}

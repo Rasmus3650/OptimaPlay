@@ -136,7 +136,7 @@ class Hand_Evaluator():
             rank_list = [elem.current_rank for elem in matching_cards]
             if royal:
                 if 10 in rank_list and 11 in rank_list and 12 in rank_list and 13 in rank_list and 14 in rank_list:
-                    return True, ("Royal Flush", 14)
+                    return True, ("Royal Flush", 14), []
             else:
                 start_rank = None
                 straight_list = []

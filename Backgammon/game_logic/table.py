@@ -29,9 +29,12 @@ class Table():
             os.mkdir(path)
         return path
 
-    def player_joined(self, strategy): 
+    def player_joined(self, strategy, p = None):
         id = len(list(self.seated_players.keys()))
-        self.seated_players[id] = Player(id, len(self.seated_players) == 0, strategy=self.strategy_map[strategy.lower()], table=self)
+        if p is None: 
+            self.seated_players[id] = Player(id, len(self.seated_players) == 0, strategy=self.strategy_map[strategy.lower()], table=self)
+        else:
+            self.seated_players[id] = p
 
     def start_game(self):
         if self.save_table:
