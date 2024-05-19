@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from Backgammon.game_logic.player import Player
+
 class BackgammonAgent(Player):
     def __init__(self, criterion, lr=0.01):
         super.__init__()

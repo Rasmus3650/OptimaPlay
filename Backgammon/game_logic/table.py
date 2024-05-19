@@ -4,13 +4,13 @@ from Backgammon.game_logic.game import Game
 from Backgammon.Strategies.random_strategy import Random_strategy
 
 class Table():
-    def __init__(self, table_id:int, save_table = True, record_folder_path = "Backgammon/recorded_tables/", consumer_thread = None) -> None:
+    def __init__(self, table_id:int, save_table = True, record_folder_path = "Backgammon/recorded_tables/", consumer_thread = None, already_seated_players = {}) -> None:
         self.game_history: list[Game] = []
         self.table_id = table_id
         self.save_table = save_table
         self.record_folder_path = record_folder_path
         self.current_game = None
-        self.seated_players = {}
+        self.seated_players = already_seated_players
         self.strategy_map = {"random": Random_strategy}
 
         self.consumer_thread = consumer_thread

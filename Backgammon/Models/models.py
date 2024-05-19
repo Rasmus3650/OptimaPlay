@@ -25,7 +25,7 @@ class Environment:
 
     def train(self, num_episodes):
         for i in range(num_episodes):
-            table = Table(i, self.agent_map)
+            table = Table(i, already_seated_players=self.agent_map)
             table.play_game()
         self.update_agents()
 
