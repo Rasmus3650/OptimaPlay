@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blackjack Dashboard</title>
+    <title>EconSim Dashboard</title>
     <style>
         body {
             background-color: #333;
@@ -54,6 +54,19 @@
             text-align: left;
         }
 
+        .tables {
+            width: 10%;
+            height: 100%;
+            border: 2px solid white;
+            padding: 20px;
+        }
+
+        .train {
+            width: 15%;
+            height: 100%;
+            border: 2px solid white;
+            padding: 20px;
+        }
 
         /* Hover effect for game elements */
         .game {
@@ -108,35 +121,19 @@
         input[type="submit"]:hover {
             background-color: #444;
         }
-        .train {
-            width: 15%;
-            height: 100%;
-            border: 2px solid white;
-            
-            padding: 20px;
-        }
-        .tables {
-            width: 10%;
-            height: 100%;
-            border: 2px solid white;
-            padding: 20px;
-        }
     </style>
     <script src="{{ url_for('static', filename='index_script.js') }}", type="text/javascript"></script>
 </head>
 <body>
     {% include 'navbar.html' %}
-
-
-<h1>Blackjack index</h1>
 <div class="flex-container">
 <div class="tables">
     <h2>Replay</h2>
     <br>
 {% for table in tables %}
-    <div class="button-container">
-    <button class="collapsible" onclick="toggleTable('{{ table }}')">{{ table }}</button>
-    <button class="collapsible first-game-button" onclick="redirectToFirstGame('{{ table }}')">First Game</button>
+<div class="button-container">
+<button class="collapsible" onclick="toggleTable('{{ table }}')">{{ table }}</button>
+<button class="collapsible first-game-button" onclick="redirectToFirstGame('{{ table }}')">First Game</button>
     
 </div>
     <div class="content" id="{{ table }}">
@@ -155,7 +152,7 @@
 <div class="train">
     <h2>Training</h2>
     <br>
-    <form action="{{url_for('train_blackjack')}}", method="post">
+    <form action="{{url_for('start_training')}}", method="post">
         <label for="table_n">Number of Tables:</label>
         <input type="number" id="table_n" name="table_n"><br>
         {% for i in range(6) %}
@@ -180,7 +177,7 @@
         element.addEventListener('click', function() {
             var table = element.getAttribute('data-table');
             var game = element.getAttribute('data-game');
-            var url = "{{ url_for('replay_blackjack', table='table_value', game='game_value') }}"
+            var url = "{{ url_for('replay_poker', table='table_value', game='game_value') }}"
                 .replace('table_value', table)
                 .replace('game_value', game);
 
@@ -193,7 +190,7 @@ function redirectToFirstGame(table) {
     var firstGameElement = document.querySelector('#' + table + ' .game');
     if (firstGameElement) {
         var game = firstGameElement.getAttribute('data-game');
-        var url = "{{ url_for('replay_blackjack', table='table_value', game='game_value', redirect=True) }}"
+        var url = "{{ url_for('econsim_table_index', table='table_value', game='game_value', redirect=True) }}"
             .replace('table_value', table)
             .replace('game_value', game);
         window.location.href = url;

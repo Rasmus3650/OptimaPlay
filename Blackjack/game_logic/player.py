@@ -1,7 +1,6 @@
-from .card import Card
-from .player_action import Player_Action
 import os, sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from Blackjack.game_logic.player_action import Player_Action
 from Blackjack.Strategies.random_strategy import Random_strategy
 from Blackjack.Strategies.GTO_strategy import GTO_strategy
 
@@ -45,7 +44,6 @@ class Player():
         return accumulators
     
     def detect_possible_actions(self, hand_id):
-        print(self.hands)
         hand_sum = self.hands[hand_id]["Value"][0]
         hand_cards = self.hands[hand_id]["Cards"]
         if hand_sum < 17 and (len(hand_cards) == 2 and hand_cards[0].current_rank == hand_cards[1].current_rank):

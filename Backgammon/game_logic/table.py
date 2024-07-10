@@ -1,15 +1,18 @@
 import os
-from .player import Player
-from .game import Game
+from Backgammon.game_logic.player import Player
+from Backgammon.game_logic.game import Game
+from Backgammon.Strategies.random_strategy import Random_strategy
 
 class Table():
-    def __init__(self, table_id:int, save_table = True, record_folder_path = "Backgammon/recorded_tables/", consumer_thread = None) -> None:
+    def __init__(self, table_id:int, save_table = True, record_folder_path = "Backgammon/recorded_tables/", consumer_thread = None, already_seated_players = {}) -> None:
         self.game_history: list[Game] = []
         self.table_id = table_id
         self.save_table = save_table
         self.record_folder_path = record_folder_path
         self.current_game = None
-        self.seated_players = {}
+        self.seated_players = already_seated_players
+        self.strategy_map = {"random": Random_strategy}
+
         self.consumer_thread = consumer_thread
     
     def get_table_folder(self):
@@ -26,9 +29,12 @@ class Table():
             os.mkdir(path)
         return path
 
-    def player_joined(self): 
+    def player_joined(self, strategy, p = None):
         id = len(list(self.seated_players.keys()))
-        self.seated_players[id] = Player(id, len(self.seated_players) == 0, table=self)
+        if p is None: 
+            self.seated_players[id] = Player(id, len(self.seated_players) == 0, strategy=self.strategy_map[strategy.lower()], table=self)
+        else:
+            self.seated_players[id] = p
 
     def start_game(self):
         if self.save_table:
@@ -42,11 +48,8 @@ class Table():
         
         self.current_game = Game(len(self.game_history), self.seated_players, return_function=self.game_ended, game_folder=game_folder, consumer_thread=self.consumer_thread, save_game=self.save_table)
 
-        print(f"\nSTARTING GAME {self.current_game.game_id}...")
         while not self.current_game.game_ended:
             action = self.current_game.perform_player_action()
     
     def game_ended(self):
-        print(f"GAME_ENDED")
-        print(f"Winner: Player {self.current_game.winner.player_id}")
         self.game_history.append(self.current_game)

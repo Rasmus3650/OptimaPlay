@@ -22,8 +22,11 @@ class Board():
     def get_special_home_moves(self, player, available_dice):
         if player == 0:
             goal = -1
-        if player == 1:
+        elif player == 1:
             goal = 24
+        else:
+            print(f"Player {player} SHOULD BE EITHER 0 OR 1...")
+            input(f"The fuck?")
         extra_moves = []
         max_tile = 0
         max_tile_pos = -1
@@ -49,11 +52,11 @@ class Board():
         if player == 0:
             for dice in available_dice:
                 if not self.is_blocked(player, 24 - dice):
-                    moves.append(["BAR", 24 - dice, dice])
+                    moves.append([30, 24 - dice, dice])
         if player == 1:
             for dice in available_dice:
                 if not self.is_blocked(player, dice - 1):
-                    moves.append(["BAR", dice - 1, dice])
+                    moves.append([30, dice - 1, dice])
         return moves
 
 
@@ -88,7 +91,7 @@ class Board():
                 
     def perform_move(self, player, move):
         start, stop, steps = move
-        if start == "BAR":
+        if start == 30:
             chip = player
             self.bar.remove(player)
         else:

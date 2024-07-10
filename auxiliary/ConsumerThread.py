@@ -29,6 +29,7 @@ class ConsumerThread(threading.Thread):
 
     def stop(self):
         self.running.clear()
+        self.enqueue_data({"stop": True}) 
 
     def run(self):
         self.running.set()
@@ -52,4 +53,4 @@ class ConsumerThread(threading.Thread):
         cwd = os.getcwd()
         file = os.path.join(os.path.join(cwd, path), "game_data.json")
         with open(file, 'w') as f:
-            json.dump(data, f)
+            f.write(json.dumps(data))

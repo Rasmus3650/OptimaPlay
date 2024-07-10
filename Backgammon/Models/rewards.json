@@ -1,0 +1,7 @@
+{
+    "win": 100,
+    "lose": -150,
+    "selfKnockout": -20,
+    "enemyKnockout": 10,
+    "movePenalty": -1
+}
