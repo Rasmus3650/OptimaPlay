@@ -22,8 +22,11 @@ class Board():
     def get_special_home_moves(self, player, available_dice):
         if player == 0:
             goal = -1
-        if player == 1:
+        elif player == 1:
             goal = 24
+        else:
+            print(f"Player {player} SHOULD BE EITHER 0 OR 1...")
+            input(f"The fuck?")
         extra_moves = []
         max_tile = 0
         max_tile_pos = -1

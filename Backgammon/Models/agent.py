@@ -5,16 +5,16 @@ import torch.optim as optim
 from Backgammon.game_logic.player import Player
 
 class BackgammonAgent(Player):
-    def __init__(self, criterion, lr=0.01):
+    def __init__(self, model, optimizer, criterion, lr=0.00025):
         super.__init__()
         self.state_size = 88
         self.action_size = 32
         self.sentient = True
         self.memory = []
-        self.model = NeuralNetwork(self.state_size, self.action_size)
-        self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
+        self.model = model
+        self.optimizer = optimizer
         self.criterion = criterion
-
+        
     def compute_action(self, state):
         """
         Compute the action based on the current state.

@@ -272,5 +272,5 @@ if __name__ == "__main__":
     #profile_results_file = "optimization_logs/profile_results.prof"
     #cProfile.run('main()', profile_results_file)
     #cProfile.run('app_main()', profile_results_file)
-    main()
+    app_main()
     
