@@ -166,7 +166,7 @@ def replay_blackjack(table, game):
     redirect_param = request.args.get('redirect')
     redirect_arg = True if redirect_param and redirect_param.lower() == 'true' else False
     png_file_names = [x for x in list(os.walk("static"))[0][2] if x[-2:] != "js"]
-    game_folder = os.path.join(os.path.join(os.path.join(os.getcwd(), "Blackjack\\recorded_tables"), f"{table}"), f"{game}")
+    game_folder = os.path.join(os.path.join(os.path.join(os.getcwd(), "Blackjack/recorded_tables"), f"{table}"), f"{game}")
     if not os.path.exists(game_folder):
         return redirect("/")
     json_data = {}
@@ -181,7 +181,7 @@ def replay_backgammon(table, game):
     redirect_param = request.args.get('redirect')
     redirect_arg = True if redirect_param and redirect_param.lower() == 'true' else False
     png_file_names = [x for x in list(os.walk("static"))[0][2] if x[-2:] != "js"]
-    game_folder = os.path.join(os.path.join(os.path.join(os.getcwd(), "Backgammon\\recorded_tables"), f"{table}"), f"{game}")
+    game_folder = os.path.join(os.path.join(os.path.join(os.getcwd(), "Backgammon/recorded_tables"), f"{table}"), f"{game}")
     if not os.path.exists(game_folder):
         return redirect("/")
     json_data = {}
@@ -257,8 +257,6 @@ def main():
     consumer_thread.stop()
     consumer_thread.join()
 
-def hello_word():
-    print("hello")
     
 def app_main():
     global consumer_thread
@@ -272,5 +270,5 @@ if __name__ == "__main__":
     #profile_results_file = "optimization_logs/profile_results.prof"
     #cProfile.run('main()', profile_results_file)
     #cProfile.run('app_main()', profile_results_file)
-    app_main()
+    #app_main()
     
