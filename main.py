@@ -18,7 +18,10 @@ import plotly.graph_objs as go
 import pstats
 import cProfile
 import snakeviz
+import platform
+
 sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
+
 class DummyFile(object):
     def write(self, x):
         pass
@@ -26,6 +29,16 @@ class DummyFile(object):
     def flush(self):
         pass
 
+
+#TODO - NEED TO UPDATE ALL PATHS TO ENSURE THEY WORK ON ALL SYSTEMS
+def get_os_type():
+    os_type = platform.system()
+    if os_type == "Windows":
+        return "Windows"
+    elif os_type == "Linux":
+        return "Linux"
+    else:
+        return "Other"
 
 consumer_thread = None
 
