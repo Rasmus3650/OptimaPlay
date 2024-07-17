@@ -86,7 +86,7 @@ class Environment:
 
                     # Get new game state given computed action
                     env.board.perform_move(env.current_player.backgammon_color, moves)
-                    env.all_actions.append([len(env.all_actions), env.current_player.backgammon_color,  [list(x) for x in self.board.board], list(self.board.bar), [roll1, roll2], move, [list(self.board.white_home), list(self.board.black_home)]])
+                    env.all_actions.append([len(env.all_actions), env.current_player.backgammon_color,  [list(x) for x in self.board.board], list(self.board.bar), [rolls[0], rolls[1]], action, [list(self.board.white_home), list(self.board.black_home)]])
                     dice.remove(abs(action[2]))
                     env.check_winner()
                     done = env.game_ended
