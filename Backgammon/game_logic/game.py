@@ -3,7 +3,7 @@ from .board import Board
 import numpy as np, os, json
 
 class Game():
-    def __init__(self, game_id, player_list: dict[int, Player], return_function, game_folder = None, consumer_thread = None, save_game = False) -> None:
+    def __init__(self, game_id, player_list: dict[int, Player], return_function, game_folder = None, consumer_thread = None, save_game = False, reward_calc=None) -> None:
         self.game_id = game_id
         self.player_list = player_list
         self.board = Board()
@@ -15,12 +15,17 @@ class Game():
         self.game_folder = game_folder
         self.save_game = save_game
         self.all_actions = []
+        self.reward_calc = reward_calc
     
     def roll_dice(self):
         return np.random.randint(1, 7), np.random.randint(1, 7)
     
-    def capture_state(self, moves):
-        return [self.board.board, moves, self.board.bar, [self.board.white_home, self.board.black_home]]
+    def capture_state(self, moves, action=None):
+        if self.reward_calc is not None:
+            reward = self.reward_calc.calculate_reward(self.board.board, moves, action, self.board.bar, [self.board.white_home, self.board.black_home], self.current_player)
+            return ([self.board.board, moves, self.board.bar, [self.board.white_home, self.board.black_home]], reward)
+        else:
+            return [self.board.board, moves, self.board.bar, [self.board.white_home, self.board.black_home]]
 
     def perform_player_action(self):
         #self.board.print_board()
