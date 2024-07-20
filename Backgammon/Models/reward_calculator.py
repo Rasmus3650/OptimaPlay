@@ -3,7 +3,7 @@ import json
 class RewardCalculator():
     def __init__(self):
         super().__init__()
-        self.reward_json = json.load(open("rewards.json"))
+        self.reward_json = json.load(open("Backgammon/Models/rewards.json"))
     
     def calculate_reward(self, board, moves, action, bar, homes, current_player):
         reward = 0
@@ -13,9 +13,12 @@ class RewardCalculator():
                     reward += self.reward_json["selfKnockout"]
                 else:
                     reward += self.reward_json["enemyKnockout"]
-            
             return reward
-        white_home, black_home = homes[0], homes[1]
         
-
-
+        reward += self.reward_json["movePenalty"]
+        other_player = (current_player + 1) % 2
+        if len(homes[current_player]) == 15:
+            reward += self.reward_json["win"]
+        elif len(homes[other_player]) == 15:
+            reward += self.reward_json["lose"]
+        return reward
