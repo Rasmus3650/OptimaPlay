@@ -1,4 +1,3 @@
-from Backgammon.Models.models import NeuralNetwork
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -6,7 +5,7 @@ from Backgammon.game_logic.player import Player
 
 class BackgammonAgent(Player):
     def __init__(self, model, optimizer, criterion, lr=0.00025):
-        super.__init__()
+        super(BackgammonAgent, self).__init__()
         self.state_size = 88
         self.action_size = 32
         self.sentient = True
@@ -25,38 +24,38 @@ class BackgammonAgent(Player):
         Returns:
             The computed action.
         """
-        board, moves, bar, homes = state
-        new_board = []  #48
-        new_bar = [0, bar.count(0), 1, bar.count(1)] #4
-        homes = [0, len(homes[0]), 1, len(homes[1])] #4
-        new_moves = []
-        for tile in board:
-            if len(tile) == 0:
-                new_board += [-1, 0]
-            else:
-                new_board += [tile[0], len(tile)]
+        # board, moves, bar, homes = state
+        # new_board = []  #48
+        # new_bar = [0, bar.count(0), 1, bar.count(1)] #4
+        # homes = [0, len(homes[0]), 1, len(homes[1])] #4
+        # new_moves = []
+        # for tile in board:
+        #     if len(tile) == 0:
+        #         new_board += [-1, 0]
+        #     else:
+        #         new_board += [tile[0], len(tile)]
 
         
 
-        valid_moves = len(moves)
-        for i in range(32):
-            if i >= len(moves):
-                new_moves += [0, 0, 0]
-            else:
-                new_moves += moves[i]
-        print(board)
-        print(moves)
-        print(bar)
-        print(homes)
+        # valid_moves = len(moves)
+        # for i in range(32):
+        #     if i >= len(moves):
+        #         new_moves += [0, 0, 0]
+        #     else:
+        #         new_moves += moves[i]
+        # print(board)
+        # print(moves)
+        # print(bar)
+        # print(homes)
         
 
-        state = torch.tensor(state, dtype=torch.float32)
-        print()
-        print(state)
-        input("State")
-        q_values = self.model(state)
-        action = torch.argmax(q_values[:valid_moves]).item()
-        return action
+        # state = torch.tensor(state, dtype=torch.float32)
+        # print()
+        # print(state)
+        # input("State")
+        state = torch.FloatTensor(state).unsqueeze(0)
+        act_values = self.model(state)
+        return torch.argmax(act_values[0]).item()
 
 
     def store_action(self, state, action, reward, next_state, done):

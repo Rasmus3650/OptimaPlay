@@ -1,11 +1,12 @@
-from agent import BackgammonAgent
-from reward_calculator import RewardCalculator
+from Backgammon.Models.agent import BackgammonAgent
+from Backgammon.Models.reward_calculator import RewardCalculator
 from Backgammon.game_logic.table import Table
 from Backgammon.game_logic.game import Game 
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
+import random
 
 
 class NeuralNetwork(nn.Module):
@@ -22,9 +23,8 @@ class NeuralNetwork(nn.Module):
         return x
 
 class Environment:
-    def __init__(self, total_steps_per_episode = 10, steps_increment = 1.2, total_episodes_before_step_increment = 10, total_episodes = 500, epsilon = 0.3, epsilon_decay_rate = 0.01, update_after_actions = 10, learning_rate = 0.00025, batch_size = 32, optimizer=optim.Adam, criterion= nn.MSELoss, model=NeuralNetwork, model_in_size = 64, model_out_size = 5) -> None:
+    def __init__(self, total_steps_per_episode = 10, steps_increment = 1.2, total_episodes_before_step_increment = 10, total_episodes = 500, gamma = 0.95, epsilon = 0.3, epsilon_decay_rate = 0.995, epsilon_min = 0.01, update_after_actions = 10, learning_rate = 0.00025, batch_size = 32, optimizer=optim.Adam, criterion= nn.MSELoss, model=NeuralNetwork, model_in_size = 64, model_out_size = 5) -> None:
         self.env = "Backgammon"
-        self.agent_map = self.spawn_agents(2)
         
         self.total_episodes = total_episodes
         self.total_reward = 0
@@ -35,12 +35,16 @@ class Environment:
 
         self.epsilon = epsilon
         self.epsilon_decay_rate = epsilon_decay_rate
+        self.epsilon_min = epsilon_min
+        self.gamma = gamma
 
         self.learning_rate = learning_rate
         self.batch_size = batch_size
         self.model = model(model_in_size, model_out_size)
         self.optimizer = optimizer(self.model.parameters(), lr=learning_rate)
         self.criterion = criterion()
+
+        self.agent_map = self.spawn_agents(2)
 
     def train(self):
         action_history = {0: [], 1: []}
@@ -61,7 +65,7 @@ class Environment:
         reward_calc = RewardCalculator()
 
         # For each episode (game)
-        for episode in range(self.episode_amount):
+        for episode in range(self.total_episodes):
             # reset game state to fresh start
             env = Game(episode, self.agent_map, reward_calc=reward_calc)
             env.current_player = current_player
@@ -100,7 +104,7 @@ class Environment:
                     done = env.game_ended
                     
                     next_moves = env.board.get_moves(env.current_player.backgammon_color, dice)
-                    next_state, next_reward = env.capture_state(next_moves, action) # TODO: give rewards based on move / state
+                    next_state, next_reward = env.capture_state(next_moves, action)
                     episode_reward[current_player] += next_reward
 
                     action_history[current_player].append(action)
@@ -115,19 +119,32 @@ class Environment:
 
                     if self.update_after_actions % frame_count == 0 and len(done_history[current_player]) >= self.batch_size:
                         # TODO: Update model
-                        indices = np.random.choice(range(len(done_history[current_player])), size=self.batch_size)
+                        # Draw random sample from memory
+                        batch_curr = random.sample((action_history[current_player], state_history[current_player], rewards_history[current_player], next_state_history[current_player], done_history[current_player]), self.batch_size)
+                        batch_other = random.sample((action_history[(current_player + 1)% 2], state_history[(current_player + 1)% 2], rewards_history[(current_player + 1)% 2], next_state_history[(current_player + 1)% 2], done_history[(current_player + 1)% 2]), self.batch_size)
+                        # Find the batch best agent
+                        batch_best_agent = current_player if (sum(batch_curr[2]) >= sum(batch_other[2])) else (current_player + 1) % 2 # should return the indices of the best player for this batch...
 
-                        # draw sample Not sure if this works correctly by converting it to tensors as such.
-                        action_sample = torch.Tensor([action_history[current_player][i] for i in indices])
-                        state_sample = torch.Tensor([state_history[current_player][i] for i in indices])
-                        next_state_sample = torch.Tensor([next_state_history[current_player][i] for i in indices])
-                        done_sample = torch.Tensor([done_history[current_player][i] for i in indices])
-                        # rewards_sample = torch.Tensor([rewards_history[i] for i in indices])
+                        actions, states, rewards, next_states, dones = zip(*batch_curr)
 
-                        # TODO: Make best model predict on next state samle to get the possible reward
-                        # TODO: one_hot encode action sample with all possible actions (optional, might not be needed)
-                        # TODO: with gradient predict with current model on state sample
-                        # TODO: Compute loss
+                        states = torch.FloatTensor(states)
+                        actions = torch.LongTensor(actions)
+                        rewards = torch.FloatTensor(rewards)
+                        next_states = torch.FloatTensor(next_states)
+                        dones = torch.IntTensor(dones)
+
+                        current_qs = self.agent_map[current_player].model(states).gather(1, actions.unsqueeze(1)).squeeze(1)
+
+                        next_qs = self.agent_map[batch_best_agent].model(next_states).max(1)[0]
+                        targets_qs = rewards + (self.gamma * next_qs * (1 - dones))
+
+                        loss = self.criterion(current_qs, targets_qs)
+                        self.optimizer.zero_grad()
+                        loss.backward()
+                        self.optimizer.step()
+
+                        if self.epsilon > self.epsilon_min:
+                            self.epsilon *= self.epsilon_decay_rate
                 
                     if done:
                         break
@@ -139,6 +156,7 @@ class Environment:
             
 
             # TODO: print statistics of episode here...
+            print(f"Episode {episode}/{self.total_episodes} - Score: {episode_reward =} - Epsilon: {self.epsilon:.2f}")
                 
             # Record game
             env.record_game()
@@ -149,4 +167,4 @@ class Environment:
         self.total_steps_per_episode = round(self.total_steps_per_episode * self.steps_increment)
 
     def spawn_agents(self, number_of_agents):
-        return {i:BackgammonAgent(self.model, self.optimizer, self.criterion, self.learning_rate) for i in range(number_of_agents)}
+        return {i:BackgammonAgent(i, self.model, self.optimizer, self.criterion, self.learning_rate) for i in range(number_of_agents)}
