@@ -4,8 +4,8 @@ import torch.optim as optim
 from Backgammon.game_logic.player import Player
 
 class BackgammonAgent(Player):
-    def __init__(self, model, optimizer, criterion, lr=0.00025):
-        super(BackgammonAgent, self).__init__()
+    def __init__(self, id, model, optimizer, criterion, lr=0.00025):
+        super(BackgammonAgent, self).__init__(p_id=id)
         self.state_size = 88
         self.action_size = 32
         self.sentient = True

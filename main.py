@@ -19,6 +19,7 @@ import pstats
 import cProfile
 import snakeviz
 import platform
+from Backgammon.Models.environment import Environment as BackgammonEnvironment
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 
@@ -279,9 +280,13 @@ def app_main():
     consumer_thread.stop()
     consumer_thread.join()
 
+def backgammon_test():
+    env = BackgammonEnvironment() #Optimaplay/Backgammon/Models/environment.py
+    env.train()
+
 if __name__ == "__main__":
     #profile_results_file = "optimization_logs/profile_results.prof"
     #cProfile.run('main()', profile_results_file)
     #cProfile.run('app_main()', profile_results_file)
     #app_main()
-    
+    backgammon_test()

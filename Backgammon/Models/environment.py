@@ -1,7 +1,11 @@
-from Backgammon.Models.agent import BackgammonAgent
-from Backgammon.Models.reward_calculator import RewardCalculator
-from Backgammon.game_logic.table import Table
-from Backgammon.game_logic.game import Game 
+#from Backgammon.Models.agent import BackgammonAgent
+#from Backgammon.Models.reward_calculator import RewardCalculator
+#from Backgammon.game_logic.table import Table
+#from Backgammon.game_logic.game import Game 
+from .agent import BackgammonAgent
+from .reward_calculator import RewardCalculator
+from ..game_logic.table import Table
+from ..game_logic.game import Game
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -45,6 +49,14 @@ class Environment:
         self.criterion = criterion()
 
         self.agent_map = self.spawn_agents(2)
+    
+    """
+    The current way we handle a game ending, is passing a function to the game, that the game calls when it is over.
+    For testing purposes, i use this function as that parameter.
+    We should consider if we want/need to pass along a return function now that we train like this.
+    """
+    def game_over(self):
+        print("Game_over")
 
     def train(self):
         action_history = {0: [], 1: []}
@@ -67,7 +79,7 @@ class Environment:
         # For each episode (game)
         for episode in range(self.total_episodes):
             # reset game state to fresh start
-            env = Game(episode, self.agent_map, reward_calc=reward_calc)
+            env = Game(episode, self.agent_map, self.game_over, reward_calc=reward_calc)
             env.current_player = current_player
 
             episode_reward = {0: 0, 1: 0}
@@ -79,8 +91,8 @@ class Environment:
                 if rolls[0] == rolls[1]:
                     dice = [rolls[0], rolls[0], rolls[1], rolls[1]]
                 else:
-                    dice = [rolls]
-                moves = env.board.get_moves(env.current_player.backgammon_color, dice)
+                    dice = rolls
+                moves = env.board.get_moves(env.current_player, dice)
 
                 state, reward = env.capture_state(moves)
                 episode_reward[current_player] += reward
@@ -97,13 +109,13 @@ class Environment:
                     self.epsilon *= self.epsilon_decay_rate
 
                     # Get new game state given computed action
-                    env.board.perform_move(env.current_player.backgammon_color, action)
-                    env.all_actions.append([len(env.all_actions), env.current_player.backgammon_color,  [list(x) for x in self.board.board], list(self.board.bar), [rolls[0], rolls[1]], action, [list(self.board.white_home), list(self.board.black_home)]])
+                    env.board.perform_move(env.current_player, action)
+                    env.all_actions.append([len(env.all_actions), env.current_player,  [list(x) for x in self.board.board], list(self.board.bar), [rolls[0], rolls[1]], action, [list(self.board.white_home), list(self.board.black_home)]])
                     dice.remove(abs(action[2]))
                     env.check_winner()
                     done = env.game_ended
                     
-                    next_moves = env.board.get_moves(env.current_player.backgammon_color, dice)
+                    next_moves = env.board.get_moves(env.current_player, dice)
                     next_state, next_reward = env.capture_state(next_moves, action)
                     episode_reward[current_player] += next_reward
 

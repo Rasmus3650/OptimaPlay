@@ -18,7 +18,7 @@ class Game():
         self.reward_calc = reward_calc
     
     def roll_dice(self):
-        return np.random.randint(1, 7), np.random.randint(1, 7)
+        return [np.random.randint(1, 7), np.random.randint(1, 7)]
     
     def capture_state(self, moves, action=None):
         if self.reward_calc is not None:
