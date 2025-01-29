@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EconSim Replay</title>
+    <style>
+        body {
+            background-color: #333;
+            color: #eee;
+            font-family: Arial, sans-serif;
+        }
+
+        canvas {
+            border: 1px solid #eee;
+        }
+
+        button {
+            background-color: #555;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #444;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 200px; /* Adjust width as needed */
+            height: 5px; /* Adjust height as needed */
+            background-color: #555;
+            border-radius: 5px;
+            outline: none;
+            margin-top: 10px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px; /* Adjust thumb width */
+            height: 20px; /* Adjust thumb height */
+            background-color: #fff;
+            border-radius: 50%;
+            border: 2px solid #555;
+            cursor: pointer;
+            margin-top: -8px; /* Adjust thumb position */
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background-color: #ddd;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:active {
+            background-color: #bbb;
+        }
+
+        #fpsValue {
+            color: #fff;
+            font-size: 16px;
+            margin-left: 10px;
+        }
+        
+        .nomargin {
+            margin: 2px;
+        }
+        #canvas-container {
+            min-width: 16px;
+            min-height: 9px;
+        }
+        #canvas-container {
+            flex: 1;
+            min-width: 16px;
+            min-height: 9px;
+        }
+        #infoContainer {
+            border-radius: 5px;
+            padding: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.15);
+            max-width: 300px;
+            margin-right: 100px;
+        }
+
+        #tableTitle {
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        #tileInfo {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        #tileInfo td, #tileInfo th {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        #tileInfo tr:nth-child(even){background-color: #444;}
+
+        #tileInfo tr:hover {background-color: #ddd;}
+
+        #tileInfo th {
+            padding-top: 12px;
+            padding-bottom: 12px;
+            text-align: left;
+            background-color: #4CAF50;
+            color: white;
+        }
+
+    </style>
+    <script src="{{ url_for('static', filename='econsim_game_animator.js') }}", type="text/javascript"></script>
+</head>
+<body>
+    {% include 'navbar.html' %}
+
+    <div id="toptext">
+        <table>
+            <tr>
+                <td><button id="toggle_game" onclick="pauseResume()">START GAME</button></th>
+            </tr>
+            <tr>
+                <td>
+                    <input type="range" min="1" max="100" value="50" id="canvasScaleSlider">
+                    <label for="canvasScaleSlider">Canvas scale</label>
+                </td>
+                <td>
+                    <input type="range" min="1" max="60" value="{{fps}}" id="fpsSlider">
+                    <span id="fpsValue">{{fps}}</span>
+                    <label for="fpsSlider">FPS</label>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div style="display: flex; align-items: flex-start;">
+        <div id="canvas-container">
+            <canvas id="myCanvas" width="1000" height="1000"></canvas> 
+        </div>
+        <div id="infoContainer">
+            <h2 id="tableTitle">Tile Information</h2>
+            <table id="tileInfo">
+                <!-- Table rows will be added here dynamically -->
+            </table>
+        </div>
+        <button id="zoomInButton">Zoom In</button>
+        <button id="zoomOutButton">Zoom Out</button>
+        
+    </div>
+
+    <div style="display:none;">
+        {% for file in filenames %}
+        <img src="{{ url_for('static', filename=file) }}" width="1600" height="900">
+        {% endfor %}
+        <p id="game_data">{{game_data | tojson | safe }}</p>
+        <p id="redirect">{{redirect}}</p>
+    </div>
+</body>
+</html>
